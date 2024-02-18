@@ -5,8 +5,8 @@ export default function App() {
 
   return (
     <>
-      <h1>{t('Estaling')}</h1>
-      <p>{t('EstalingMotto')}</p>
+      <h1>{t('Etaling')}</h1>
+      <p>{t('EtalingMotto')}</p>
     </>
   );
 }
