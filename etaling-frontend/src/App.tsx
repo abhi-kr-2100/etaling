@@ -1,3 +1,12 @@
+import { useTranslation } from 'react-i18next';
+
 export default function App() {
-  return <h1>Etaling</h1>;
+  const { t } = useTranslation('Homepage');
+
+  return (
+    <>
+      <h1>{t('Estaling')}</h1>
+      <p>{t('EstalingMotto')}</p>
+    </>
+  );
 }
