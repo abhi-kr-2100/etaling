@@ -21,6 +21,7 @@ export default function SupportedLanguagesCarousel({
           style={{
             bgcolor: theme.palette.primary.main,
           }}
+          key={lang.id}
         />
       )}
       style={{
