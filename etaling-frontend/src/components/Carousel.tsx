@@ -13,7 +13,7 @@ export default function Carousel<T>({
     <Box
       display={'flex'}
       sx={{
-        gap: style.gap,
+        gap: style.gap ?? defaultStyle.gap,
       }}
     >
       {items.map((item, idx) => itemToTile(item, idx))}
@@ -29,9 +29,9 @@ export interface CarouselProps<T> {
   items: T[];
   itemToTile: (item: T, idx: number) => ReactNode;
 
-  style: CarouselStyleProps;
+  style?: CarouselStyleProps;
 }
 
 export interface CarouselStyleProps {
-  gap: Property.Gap;
+  gap?: Property.Gap;
 }
