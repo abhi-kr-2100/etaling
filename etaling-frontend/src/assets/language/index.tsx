@@ -27,9 +27,9 @@ export default [
     flag: <TrFlag />,
     name: tLanguages('Turkish'),
   },
-] as Langauge[];
+] as Language[];
 
-export interface Langauge {
+export interface Language {
   id: LanguageCode;
   flag: ReactNode;
   name: string;
