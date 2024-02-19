@@ -7,12 +7,12 @@ import './i18next.ts';
 
 import theme from './assets/theme.tsx';
 
-import App from './App.tsx';
+import Homepage from './Homepage';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
-      <App />
+      <Homepage />
     </ThemeProvider>
   </React.StrictMode>,
 );
