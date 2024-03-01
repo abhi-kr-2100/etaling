@@ -10,17 +10,9 @@ import 'normalize.css';
 import './i18next.ts';
 
 import theme from './assets/theme.tsx';
+import routes from './assets/routes.tsx';
 
-import Homepage from './Homepage';
-import ErrorPage from './ErrorPage/index.tsx';
-
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <Homepage />,
-    errorElement: <ErrorPage />,
-  },
-]);
+const router = createBrowserRouter(routes);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
