@@ -1,4 +1,5 @@
 import { t } from 'i18next';
+
 import ErrorPage from '../ErrorPage';
 import Homepage from '../Homepage';
 import NavigationBar from '../NavigationBar';
@@ -22,4 +23,9 @@ export const navbarItems = [
     path: '/',
     title: t('Home', { ns: 'NavigationBar' }),
   },
-];
+] as NavBarItem[];
+
+export interface NavBarItem {
+  path: string;
+  title: string;
+}
