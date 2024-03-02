@@ -7,9 +7,16 @@ export default function EtalingAppBar({ items }: EtalingAppBarProps) {
   return (
     <AppBar position="sticky">
       <EtalingToolbar>
-        {items.map((item) => (
-          <MenuItem title={item.title} path={item.path} key={item.title} />
-        ))}
+        {items
+          .filter((item) => !item.hide)
+          .map((item) => (
+            <MenuItem
+              title={item.title}
+              path={item.path}
+              key={item.title}
+              onClick={item.onClick}
+            />
+          ))}
       </EtalingToolbar>
     </AppBar>
   );

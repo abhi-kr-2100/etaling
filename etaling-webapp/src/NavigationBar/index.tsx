@@ -3,12 +3,20 @@ import { Outlet } from 'react-router-dom';
 import EtalingAppBar from './EtalingAppBar';
 import PageContainer from './PageContainer';
 
-import { navbarItems } from '../assets/routes';
+import { getNavbarItems } from '../assets/routes';
+import { useAuth0 } from '@auth0/auth0-react';
+import { useMemo } from 'react';
 
 export default function NavigationBar() {
+  const { isAuthenticated, loginWithRedirect, logout } = useAuth0();
+  const navBarItems = useMemo(
+    () => getNavbarItems(isAuthenticated, loginWithRedirect, logout),
+    [isAuthenticated, loginWithRedirect, logout],
+  );
+
   return (
     <>
-      <EtalingAppBar items={navbarItems} />
+      <EtalingAppBar items={navBarItems} />
       <PageContainer>
         <Outlet />
       </PageContainer>

@@ -19,7 +19,7 @@ const routes = [
       {
         path: '/login',
         element: <LoginPage />,
-        title: t('Login', { ns: 'Navigationbar' }),
+        title: t('Login', { ns: 'NavigationBar' }),
       },
     ],
   },
@@ -27,12 +27,31 @@ const routes = [
 
 export default routes;
 
-export const navbarItems = routes[0].children.map((route) => ({
-  path: route.path,
-  title: route.title,
-})) as NavBarItem[];
+export const getNavbarItems = (
+  isUserAuthenticated: boolean,
+  login: CallableFunction,
+  logout: CallableFunction,
+) =>
+  [
+    {
+      title: t('Home', { ns: 'NavigationBar' }),
+      path: '/',
+    },
+    {
+      title: t('Login', { ns: 'NavigationBar' }),
+      onClick: login,
+      hide: isUserAuthenticated,
+    },
+    {
+      title: t('Logout', { ns: 'NavigationBar' }),
+      onClick: logout,
+      hide: !isUserAuthenticated,
+    },
+  ] as NavBarItem[];
 
 export interface NavBarItem {
-  path: string;
   title: string;
+  path?: string;
+  onClick?: CallableFunction;
+  hide?: boolean;
 }
