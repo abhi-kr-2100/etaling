@@ -1,15 +1,16 @@
-import { AppBar, Toolbar } from '@mui/material';
+import { AppBar } from '@mui/material';
 import { NavBarItem } from '../assets/routes';
 import MenuItem from './MenuItem';
+import EtalingToolbar from './EtalingToolbar';
 
 export default function EtalingAppBar({ items }: EtalingAppBarProps) {
   return (
     <AppBar position="sticky">
-      <Toolbar>
+      <EtalingToolbar>
         {items.map((item) => (
           <MenuItem title={item.title} path={item.path} key={item.title} />
         ))}
-      </Toolbar>
+      </EtalingToolbar>
     </AppBar>
   );
 }
