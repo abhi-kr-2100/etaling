@@ -7,5 +7,11 @@
     "Home": "Home",
     "Login": "Login",
     "Logout": "Logout"
+  },
+  "Languages": {
+    "Spanish": "Spanish",
+    "Japanese": "Japanese",
+    "Russian": "Russian",
+    "Turkish": "Turkish"
   }
 }
