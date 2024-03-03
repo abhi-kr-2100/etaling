@@ -8,4 +8,5 @@ await i18next.use(initReactI18next).init({
     en: enJSON,
   },
   lng: 'en',
+  debug: import.meta.env.VITE_DEBUG_MODE ? true : false,
 });
