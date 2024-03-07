@@ -1,9 +1,9 @@
+import 'dotenv/config';
+
 import express from 'express';
 
 import cors from 'cors';
 import jwtCheck from './middlewares/jwt-check';
-
-import 'dotenv/config';
 
 const PORT = process.env.PORT ?? 3000;
 
