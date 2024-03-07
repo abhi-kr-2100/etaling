@@ -20,4 +20,4 @@ app.get('/api', (req, res) => {
   res.send('Hello, world!');
 });
 
-app.listen(PORT);
+app.listen(PORT, () => console.log(`Listening on http://localhost:${PORT}`));
