@@ -52,12 +52,11 @@ describe('create user profile middleware', () => {
   });
 
   it('should not create a user profile if one already exists', async () => {
-    const user = new UserProfile({ userId: req.auth?.payload.sub });
-    await user.save();
+    const user = await UserProfile.create({ userId: req.auth?.payload.sub });
 
     await createUserProfile(req, resp, next);
     const allUsers = await UserProfile.find();
     expect(allUsers.length).toBe(1);
-    expect(allUsers[0].userId).toBe(req.auth?.payload.sub);
+    expect(allUsers[0].id).toBe(user.id);
   });
 });
