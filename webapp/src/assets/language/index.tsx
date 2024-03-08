@@ -36,7 +36,8 @@ export interface Language {
 }
 
 // ISO 639-1 codes: https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
-export type LanguageCode = 'es' | 'ja' | 'ru' | 'tr' | 'en';
+export const LANGUAGE_CODES = ['es', 'ja', 'ru', 'tr', 'en'] as const;
+export type LanguageCode = (typeof LANGUAGE_CODES)[number];
 
 function tLanguages(key: string) {
   return t(key, { ns: 'Languages' });
