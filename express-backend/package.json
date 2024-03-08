@@ -19,7 +19,8 @@
     "mongodb-memory-server": "^9.1.6",
     "node-mocks-http": "^1.14.1",
     "prettier": "^3.2.5",
-    "ts-jest": "^29.1.2"
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2"
   },
   "dependencies": {
     "cors": "^2.8.5",
