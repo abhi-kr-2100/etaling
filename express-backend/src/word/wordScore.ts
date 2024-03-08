@@ -8,8 +8,8 @@ export const scoreSchema = new Schema({
 });
 
 export const wordScoreSchema = new Schema({
-  _wordId: Schema.ObjectId,
-  _userId: Schema.ObjectId,
+  word: Schema.ObjectId,
+  user: Schema.ObjectId,
 
   score: scoreSchema,
 });
