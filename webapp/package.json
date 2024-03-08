@@ -17,6 +17,8 @@
     "@fontsource/roboto": "^5.0.8",
     "@mui/icons-material": "^5.15.10",
     "@mui/material": "^5.15.10",
+    "@tanstack/react-query": "^5.25.0",
+    "axios": "^1.6.7",
     "i18next": "^23.9.0",
     "normalize.css": "^8.0.1",
     "react": "^18.2.0",
