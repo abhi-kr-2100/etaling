@@ -4,6 +4,7 @@ import ErrorPage from '../ErrorPage';
 import Homepage from '../Homepage';
 import NavigationBar from '../NavigationBar';
 import LoginPage from '../LoginPage';
+import SentenceListsPage from '../SentenceListsPage';
 
 const routes = [
   {
@@ -15,6 +16,11 @@ const routes = [
         path: '/',
         element: <Homepage />,
         title: t('Home', { ns: 'NavigationBar' }),
+      },
+      {
+        path: '/lists',
+        element: <SentenceListsPage />,
+        title: t('Lists', { ns: 'NavigationBar' }),
       },
       {
         path: '/login',
@@ -36,6 +42,10 @@ export const getNavbarItems = (
     {
       title: t('Home', { ns: 'NavigationBar' }),
       path: '/',
+    },
+    {
+      title: t('Lists', { ns: 'NavigationBar' }),
+      path: '/lists',
     },
     {
       title: t('Login', { ns: 'NavigationBar' }),
