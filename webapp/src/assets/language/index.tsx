@@ -36,7 +36,7 @@ export interface Language {
 }
 
 // ISO 639-1 codes: https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
-export type LanguageCode = 'es' | 'ja' | 'ru' | 'tr';
+export type LanguageCode = 'es' | 'ja' | 'ru' | 'tr' | 'en';
 
 function tLanguages(key: string) {
   return t(key, { ns: 'Languages' });
