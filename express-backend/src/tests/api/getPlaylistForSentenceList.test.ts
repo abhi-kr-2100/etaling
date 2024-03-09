@@ -41,6 +41,19 @@ describe('GET playlist for a sentence list', () => {
         _id: Types.ObjectId;
       };
 
+  let translation1: Document<unknown, {}, SentenceType> &
+      SentenceType & {
+        _id: Types.ObjectId;
+      },
+    translation2: Document<unknown, {}, SentenceType> &
+      SentenceType & {
+        _id: Types.ObjectId;
+      },
+    translation1_1: Document<unknown, {}, SentenceType> &
+      SentenceType & {
+        _id: Types.ObjectId;
+      };
+
   let sentenceScore1: Document<unknown, {}, SentenceScoreType> &
     SentenceScoreType;
   let sentenceScore2: Document<unknown, {}, SentenceScoreType> &
@@ -92,6 +105,26 @@ describe('GET playlist for a sentence list', () => {
       sentenceList: testSentenceList,
     });
 
+    translation1 = await Sentence.create({
+      text: 'Merhaba, dünya!',
+      textLanguageCode: 'tr',
+    });
+
+    translation1_1 = await Sentence.create({
+      text: 'Hallo, welt!',
+      textLanguageCode: 'de',
+    });
+
+    sentence1.translations.push(translation1._id);
+    sentence1.translations.push(translation1_1._id);
+    await sentence1.save();
+
+    translation1.translations.push(sentence1._id);
+    await translation1.save();
+
+    translation1_1.translations.push(sentence1._id);
+    await translation1_1.save();
+
     words.push(
       await Word.create({
         wordText: 'hello',
@@ -123,6 +156,17 @@ describe('GET playlist for a sentence list', () => {
       textLanguageCode: 'en',
       sentenceList: testSentenceList,
     });
+
+    translation2 = await Sentence.create({
+      text: 'Hoşça kal, evren!',
+      textLanguageCode: 'tr',
+    });
+
+    sentence2.translations.push(translation2._id);
+    await sentence2.save();
+
+    translation2.translations.push(sentence2._id);
+    await translation2.save();
 
     words.push(
       await Word.create({
@@ -270,5 +314,42 @@ describe('GET playlist for a sentence list', () => {
     expect(data.length).toBe(2);
     expect(data[0].sentence._id.toString()).toBe(sentence2._id.toString());
     expect(data[1].sentence._id.toString()).toBe(sentence1._id.toString());
+  });
+
+  it('should return translations in the specified language (tr)', async () => {
+    const req = createRequest({
+      ...reqTemplate,
+      query: {
+        translationLang: 'tr',
+      },
+    });
+    const res = createResponse();
+
+    await getPlaylistForSentenceList(req, res);
+    const data = res._getJSONData();
+
+    expect(data[0].translations.length).toBe(1);
+    expect(data[0].translations[0]._id).toBe(translation2._id.toString());
+
+    expect(data[1].translations.length).toBe(1);
+    expect(data[1].translations[0]._id).toBe(translation1._id.toString());
+  });
+
+  it('should return translations in the specified language (de)', async () => {
+    const req = createRequest({
+      ...reqTemplate,
+      query: {
+        translationLang: 'de',
+      },
+    });
+    const res = createResponse();
+
+    await getPlaylistForSentenceList(req, res);
+    const data = res._getJSONData();
+
+    expect(data[0].translations.length).toBe(0);
+
+    expect(data[1].translations.length).toBe(1);
+    expect(data[1].translations[0]._id).toBe(translation1_1._id.toString());
   });
 });

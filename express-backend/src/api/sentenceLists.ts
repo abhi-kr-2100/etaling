@@ -5,6 +5,8 @@ import SentenceScore from '../sentence/sentenceScore';
 import { getLanguageModel } from '../language-models';
 import { LanguageCode } from '../../../shared/languages';
 import WordScore from '../word/wordScore';
+import Sentence, { SentenceType } from '../sentence';
+import { ObjectId } from 'mongoose';
 
 const router = Router();
 
@@ -22,15 +24,18 @@ export async function getPlaylistForSentenceList(req: Request, res: Response) {
   const userId = req.auth.payload.sub;
   const sentenceListId = req.params.id;
 
+  const limit = Number.parseInt(req.query.limit as string);
+  const translationLanguages = [req.query.translationLang];
+
   const sentences = (
     await SentenceScore.find({
       'owner.userId': userId,
       'sentence.sentenceList._id': sentenceListId,
     })
-      .limit(Number.parseInt(req.query.limit as string))
+      .limit(limit)
       .sort({ level: 1 })
       .select('sentence')
-  ).map((s) => s.sentence);
+  ).map((s) => s.sentence as SentenceType & { _id: ObjectId });
 
   let sentencesWithWordScoresAndTranslations = await Promise.all(
     sentences.map(async (sentence) => {
@@ -44,9 +49,15 @@ export async function getPlaylistForSentenceList(req: Request, res: Response) {
         'word.wordText': { $in: wordTexts },
       });
 
+      const translations = await Sentence.find({
+        textLanguageCode: { $in: translationLanguages },
+        translations: { $elemMatch: { $eq: sentence._id } },
+      });
+
       return {
         sentence,
         words: wordScores,
+        translations,
       };
     }),
   );
