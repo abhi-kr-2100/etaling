@@ -3,7 +3,10 @@ import { LANGUAGE_CODES } from '../../../shared/languages';
 
 export const sentenceSchema = new Schema({
   text: String,
-  textLanguageCode: LANGUAGE_CODES,
+  textLanguageCode: {
+    type: String,
+    enum: LANGUAGE_CODES,
+  },
   translations: [Schema.ObjectId],
 });
 

@@ -1,10 +1,15 @@
-import { Schema, model } from 'mongoose';
+import { InferSchemaType, Schema, model } from 'mongoose';
 
 import { LANGUAGE_CODES } from '../../../shared/languages';
 
 export const wordSchema = new Schema({
   wordText: String,
-  languageCode: LANGUAGE_CODES,
+  languageCode: {
+    type: String,
+    enum: LANGUAGE_CODES,
+  },
 });
+
+export type WordType = InferSchemaType<typeof wordSchema>;
 
 export default model('Word', wordSchema);
