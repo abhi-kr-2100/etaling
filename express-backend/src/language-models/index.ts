@@ -1,4 +1,5 @@
 import { LanguageCode } from '../../../shared/languages';
+import EnglishLM from './en';
 
 export interface LanguageModel {
   getLanguage(): LanguageCode;
@@ -19,4 +20,15 @@ export interface WordSeparatedLM extends LanguageModel {
 export interface CaseSensitiveLM extends LanguageModel {
   toLowerCase(s: string): string;
   toUpperCase(s: string): string;
+}
+
+export function getLanguageModel(languageCode: LanguageCode) {
+  switch (languageCode) {
+    case 'en':
+      return new EnglishLM();
+    default:
+      throw new Error(
+        `No suitable language model for language: ${languageCode}`,
+      );
+  }
 }
