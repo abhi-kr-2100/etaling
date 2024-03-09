@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-import { LANGUAGE_CODES } from '../../../webapp/src/assets/language';
+import { LANGUAGE_CODES } from '../../../shared/languages';
 
 export const wordSchema = new Schema({
   wordText: String,

@@ -1,4 +1,4 @@
-import { LanguageCode } from '../../../webapp/src/assets/language';
+import { LanguageCode } from '../../../shared/languages';
 
 export interface LanguageModel {
   getLanguage(): LanguageCode;

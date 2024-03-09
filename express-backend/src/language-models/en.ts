@@ -1,5 +1,5 @@
 import { CaseSensitiveLM, LanguageModel, WordSeparatedLM } from '.';
-import { LanguageCode } from '../../../webapp/src/assets/language';
+import { LanguageCode } from '../../../shared/languages';
 
 export default class EnglishLM
   implements LanguageModel, WordSeparatedLM, CaseSensitiveLM

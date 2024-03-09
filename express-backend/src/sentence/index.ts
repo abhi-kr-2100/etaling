@@ -1,5 +1,5 @@
 import { Schema, InferSchemaType, model } from 'mongoose';
-import { LANGUAGE_CODES } from '../../../webapp/src/assets/language';
+import { LANGUAGE_CODES } from '../../../shared/languages';
 
 export const sentenceSchema = new Schema({
   text: String,
