@@ -1,4 +1,5 @@
 import { InferSchemaType, Schema, model } from 'mongoose';
+import { wordSchema } from './word';
 
 export const scoreSchema = new Schema({
   repetitionNumber: { type: Number, min: 0, default: 0 },
@@ -8,7 +9,7 @@ export const scoreSchema = new Schema({
 });
 
 export const wordScoreSchema = new Schema({
-  word: Schema.ObjectId,
+  word: wordSchema,
   user: Schema.ObjectId,
 
   score: scoreSchema,
