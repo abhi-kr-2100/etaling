@@ -1,5 +1,3 @@
-import 'dotenv/config';
-
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import { jest } from '@jest/globals';
 
