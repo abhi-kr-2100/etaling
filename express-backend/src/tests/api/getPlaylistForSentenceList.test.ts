@@ -5,6 +5,7 @@ import {
   beforeAll,
   afterAll,
   afterEach,
+  beforeEach,
 } from '@jest/globals';
 
 import { MongoMemoryServer } from 'mongodb-memory-server';
@@ -17,17 +18,19 @@ import { WordScoreType } from '../../word/wordScore';
 import { WordType } from '../../word/word';
 import { SentenceListType } from '../../sentence-list';
 
-import { UserProfile } from '../../user-profile';
+import { UserProfile, UserProfileType } from '../../user-profile';
 import Sentence from '../../sentence';
 import SentenceList from '../../sentence-list';
 import Word from '../../word/word';
 import WordScore from '../../word/wordScore';
 
 import { getPlaylistForSentenceList } from '../../api/sentenceLists';
-import SentenceScore from '../../sentence/sentenceScore';
+import SentenceScore, { SentenceScoreType } from '../../sentence/sentenceScore';
 
 describe('GET playlist for a sentence list', () => {
   let mongoDB: MongoMemoryServer;
+
+  let alice: Document<unknown, {}, UserProfileType> & UserProfileType;
 
   let sentence1: Document<unknown, {}, SentenceType> &
       SentenceType & {
@@ -37,6 +40,11 @@ describe('GET playlist for a sentence list', () => {
       SentenceType & {
         _id: Types.ObjectId;
       };
+
+  let sentenceScore1: Document<unknown, {}, SentenceScoreType> &
+    SentenceScoreType;
+  let sentenceScore2: Document<unknown, {}, SentenceScoreType> &
+    SentenceScoreType;
 
   let words = [] as (Document<unknown, {}, WordType> & WordType)[];
   let wordScores = [] as (Document<unknown, {}, WordScoreType> &
@@ -52,14 +60,13 @@ describe('GET playlist for a sentence list', () => {
     const uri = mongoDB.getUri();
     await mongoose.connect(uri);
 
-    const alice = await UserProfile.create({
+    alice = await UserProfile.create({
       userId: 'google-oauth2|113671952727045600873',
     });
 
     testSentenceList = await SentenceList.create({
       title: "Alice's Test List",
-      owner: alice._id,
-      sentences: [], // sentences will be added as per test requirements
+      owner: alice,
     });
 
     reqTemplate = {
@@ -82,21 +89,7 @@ describe('GET playlist for a sentence list', () => {
     sentence1 = await Sentence.create({
       text: 'Hello, world!',
       textLanguageCode: 'en',
-    });
-
-    await SentenceScore.create({
-      sentence: sentence1,
-      user: alice._id,
-      score: {
-        repetitionNumber: 2,
-        easinessFactor: 2.508,
-        interRepetitionIntervalInDays: 6,
-        lastReviewDate: new Date(),
-      },
-      level: Math.max(
-        0,
-        6, // interRepetitionIntervalInDays - (today - lastReviewDate)
-      ),
+      sentenceList: testSentenceList,
     });
 
     words.push(
@@ -108,7 +101,7 @@ describe('GET playlist for a sentence list', () => {
     wordScores.push(
       await WordScore.create({
         word: words[0],
-        user: alice._id,
+        owner: alice,
       }),
     );
 
@@ -121,19 +114,14 @@ describe('GET playlist for a sentence list', () => {
     wordScores.push(
       await WordScore.create({
         word: words[1],
-        user: alice._id,
+        owner: alice,
       }),
     );
 
     sentence2 = await Sentence.create({
       text: 'Goodbye, universe!',
       textLanguageCode: 'en',
-    });
-
-    await SentenceScore.create({
-      sentence: sentence2,
-      user: alice._id,
-      level: 0,
+      sentenceList: testSentenceList,
     });
 
     words.push(
@@ -145,7 +133,7 @@ describe('GET playlist for a sentence list', () => {
     wordScores.push(
       await WordScore.create({
         word: words[2],
-        user: alice._id,
+        owner: alice,
       }),
     );
 
@@ -158,9 +146,30 @@ describe('GET playlist for a sentence list', () => {
     wordScores.push(
       await WordScore.create({
         word: words[3],
-        user: alice._id,
+        owner: alice,
       }),
     );
+
+    sentenceScore1 = await SentenceScore.create({
+      sentence: sentence1,
+      owner: alice,
+      score: {
+        repetitionNumber: 2,
+        easinessFactor: 2.508,
+        interRepetitionIntervalInDays: 6,
+        lastReviewDate: new Date(),
+      },
+      level: Math.max(
+        0,
+        6, // interRepetitionIntervalInDays - (today - lastReviewDate)
+      ),
+    });
+
+    sentenceScore2 = await SentenceScore.create({
+      sentence: sentence2,
+      owner: alice,
+      level: 0,
+    });
   });
 
   afterAll(async () => {
@@ -168,13 +177,44 @@ describe('GET playlist for a sentence list', () => {
     await mongoDB.stop();
   });
 
+  beforeEach(async () => {
+    sentence1.sentenceList = testSentenceList;
+    await sentence1.save();
+
+    sentenceScore1.sentence = sentence1;
+    await sentenceScore1.save();
+
+    sentence2.sentenceList = testSentenceList;
+    await sentence2.save();
+
+    sentenceScore2.sentence = sentence2;
+    await sentenceScore2.save();
+  });
+
   afterEach(async () => {
-    testSentenceList.sentences = [];
-    await testSentenceList.save();
+    sentence1.sentenceList = undefined;
+    await sentence1.save();
+
+    sentenceScore1.sentence = sentence1;
+    await sentenceScore1.save();
+
+    sentence2.sentenceList = undefined;
+    await sentence2.save();
+
+    sentenceScore2.sentence = sentence2;
+    await sentenceScore2.save();
   });
 
   it('should return an empty array if sentence list has no sentences', async () => {
-    const req = createRequest(reqTemplate);
+    const emptySentenceList = await SentenceList.create({
+      title: 'Empty Sentence List',
+      owner: alice,
+    });
+
+    const req = createRequest({
+      ...reqTemplate,
+      params: { id: emptySentenceList._id },
+    });
     const res = createResponse();
 
     await getPlaylistForSentenceList(req, res);
@@ -184,9 +224,6 @@ describe('GET playlist for a sentence list', () => {
   });
 
   it('should return sentences all sentences when limit is not given', async () => {
-    testSentenceList.sentences = [sentence1._id, sentence2._id];
-    await testSentenceList.save();
-
     const req = createRequest(reqTemplate);
     const res = createResponse();
 
@@ -197,9 +234,6 @@ describe('GET playlist for a sentence list', () => {
   });
 
   it('should return a limited number of sentences when limit is given', async () => {
-    testSentenceList.sentences = [sentence1._id, sentence2._id];
-    await testSentenceList.save();
-
     const req = createRequest({
       ...reqTemplate,
       query: { limit: 1 },
@@ -213,9 +247,6 @@ describe('GET playlist for a sentence list', () => {
   });
 
   it('should return word scores', async () => {
-    testSentenceList.sentences = [sentence1._id, sentence2._id];
-    await testSentenceList.save();
-
     const req = createRequest(reqTemplate);
     const res = createResponse();
 
@@ -230,9 +261,6 @@ describe('GET playlist for a sentence list', () => {
   });
 
   it('should return sentences sorted by their necessity to be reviewed', async () => {
-    testSentenceList.sentences = [sentence1._id, sentence2._id];
-    await testSentenceList.save();
-
     const req = createRequest(reqTemplate);
     const res = createResponse();
 

@@ -93,8 +93,7 @@ describe('GET sentence list', () => {
     await SentenceList.create({
       title: 'Test List',
       isPublic: false,
-      owner: bob._id,
-      sentences: [],
+      owner: bob,
     });
 
     const req = createRequest(aliceReqOpts);
@@ -112,8 +111,7 @@ describe('GET sentence list', () => {
     });
     const list = await SentenceList.create({
       title: 'Test List',
-      owner: bob._id,
-      sentences: [],
+      owner: bob,
     });
 
     const req = createRequest(aliceReqOpts);
@@ -123,10 +121,12 @@ describe('GET sentence list', () => {
     const data = res._getJSONData();
 
     expect(data.length).toBe(1);
-    expect(data[0]).toEqual({
+    expect({
+      _id: data[0]._id,
+      title: data[0].title,
+    }).toEqual({
       _id: list._id.toString(),
       title: list.title,
-      sentences: list.sentences,
     });
   });
 
@@ -137,8 +137,7 @@ describe('GET sentence list', () => {
     await SentenceList.create({
       title: "Bob's Private List",
       isPublic: false,
-      owner: bob._id,
-      sentences: [],
+      owner: bob,
     });
 
     const alice = await UserProfile.findOne({
@@ -146,8 +145,7 @@ describe('GET sentence list', () => {
     });
     const list = await SentenceList.create({
       title: "Alice's List",
-      owner: alice._id,
-      sentences: [],
+      owner: alice,
     });
 
     const req = createRequest(aliceReqOpts);
@@ -157,10 +155,12 @@ describe('GET sentence list', () => {
     const data = res._getJSONData();
 
     expect(data.length).toBe(1);
-    expect(data[0]).toEqual({
+    expect({
+      _id: data[0]._id,
+      title: data[0].title,
+    }).toEqual({
       _id: list._id.toString(),
       title: list.title,
-      sentences: list.sentences,
     });
   });
 
@@ -171,8 +171,7 @@ describe('GET sentence list', () => {
     const aList = await SentenceList.create({
       title: "Alice's List",
       isPublic: false,
-      owner: alice._id,
-      sentences: [],
+      owner: alice,
     });
 
     const bob = await UserProfile.findOne({
@@ -181,7 +180,6 @@ describe('GET sentence list', () => {
     const bList = await SentenceList.create({
       title: "Bob's Public List",
       owner: bob._id,
-      sentences: [],
     });
 
     const req = createRequest(aliceReqOpts);
@@ -191,15 +189,23 @@ describe('GET sentence list', () => {
     const data = res._getJSONData();
 
     expect(data.length).toBe(2);
-    expect(data).toContainEqual({
+    expect(
+      data.map((list) => ({
+        _id: list._id,
+        title: list.title,
+      })),
+    ).toContainEqual({
       _id: aList._id.toString(),
       title: aList.title,
-      sentences: aList.sentences,
     });
-    expect(data).toContainEqual({
+    expect(
+      data.map((list) => ({
+        _id: list._id,
+        title: list.title,
+      })),
+    ).toContainEqual({
       _id: bList._id.toString(),
       title: bList.title,
-      sentences: bList.sentences,
     });
   });
 });

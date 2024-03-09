@@ -1,10 +1,11 @@
 import { InferSchemaType, Schema, model } from 'mongoose';
 import { scoreSchema } from '../word/wordScore';
 import { sentenceSchema } from '.';
+import { userProfileSchema } from '../user-profile';
 
 export const sentenceScoreSchema = new Schema({
   sentence: sentenceSchema,
-  user: Schema.ObjectId,
+  owner: userProfileSchema,
 
   score: scoreSchema,
   level: Number,

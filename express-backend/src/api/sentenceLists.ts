@@ -1,6 +1,5 @@
 import { Request, Response, Router } from 'express';
 
-import { UserProfile } from '../user-profile';
 import SentenceList from '../sentence-list';
 import SentenceScore from '../sentence/sentenceScore';
 import { getLanguageModel } from '../language-models';
@@ -11,47 +10,29 @@ const router = Router();
 
 export async function getSentenceLists(req: Request, res: Response) {
   const userId = req.auth.payload.sub;
-  const userProfile = await UserProfile.findOne({
-    userId,
-  });
 
   const sentenceLists = await SentenceList.find({
-    $or: [{ owner: userProfile._id }, { isPublic: true }],
+    $or: [{ 'owner.userId': userId }, { isPublic: true }],
   });
 
-  res.json(
-    sentenceLists.map((sl) => ({
-      _id: sl._id,
-      title: sl.title,
-      sentences: sl.sentences,
-    })),
-  );
+  res.json(sentenceLists);
 }
 
 export async function getPlaylistForSentenceList(req: Request, res: Response) {
-  const userProfile = await UserProfile.findOne({
-    userId: req.auth.payload.sub,
-  });
-
-  const sentenceList = await SentenceList.findOne({
-    _id: req.params.id,
-  });
-
-  // const sentences = await Sentence.find({
-  //   _id: { $in: sentenceList.sentences },
-  // }).limit(Number.parseInt(req.query.limit as string));
+  const userId = req.auth.payload.sub;
+  const sentenceListId = req.params.id;
 
   const sentences = (
     await SentenceScore.find({
-      user: userProfile._id,
-      'sentence._id': { $in: sentenceList.sentences },
+      'owner.userId': userId,
+      'sentence.sentenceList._id': sentenceListId,
     })
       .limit(Number.parseInt(req.query.limit as string))
       .sort({ level: 1 })
       .select('sentence')
   ).map((s) => s.sentence);
 
-  let sentencesWithWordScores = await Promise.all(
+  let sentencesWithWordScoresAndTranslations = await Promise.all(
     sentences.map(async (sentence) => {
       const lm = getLanguageModel(
         sentence.textLanguageCode as unknown as LanguageCode,
@@ -59,7 +40,7 @@ export async function getPlaylistForSentenceList(req: Request, res: Response) {
       const wordTexts = lm.getWords(sentence.text as string);
 
       const wordScores = await WordScore.find({
-        user: userProfile._id,
+        'owner.userId': userId,
         'word.wordText': { $in: wordTexts },
       });
 
@@ -70,7 +51,7 @@ export async function getPlaylistForSentenceList(req: Request, res: Response) {
     }),
   );
 
-  res.json(sentencesWithWordScores);
+  res.json(sentencesWithWordScoresAndTranslations);
 }
 
 router.get('/', getSentenceLists);
