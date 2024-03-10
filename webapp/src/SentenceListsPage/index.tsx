@@ -40,7 +40,7 @@ export default function SentenceListsPage() {
       <ItemList
         items={sentenceLists}
         itemToTile={(item) => (
-          <SentenceListTile key={item.title} title={item.title} />
+          <SentenceListTile key={item.title} title={item.title} id={item._id} />
         )}
         style={{
           gap: '20px',

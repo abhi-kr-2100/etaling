@@ -5,6 +5,7 @@ import Homepage from '../Homepage';
 import NavigationBar from '../NavigationBar';
 import LoginPage from '../LoginPage';
 import SentenceListsPage from '../SentenceListsPage';
+import PlayPage from '../PlayPage';
 
 const routes = [
   {
@@ -13,17 +14,27 @@ const routes = [
     errorElement: <ErrorPage />,
     children: [
       {
-        path: '/',
+        path: '',
         element: <Homepage />,
         title: t('Home', { ns: 'NavigationBar' }),
       },
       {
-        path: '/lists',
-        element: <SentenceListsPage />,
-        title: t('Lists', { ns: 'NavigationBar' }),
+        path: 'lists',
+        children: [
+          {
+            path: '',
+            element: <SentenceListsPage />,
+            title: t('Lists', { ns: 'NavigationBar' }),
+          },
+          {
+            path: ':id',
+            element: <PlayPage />,
+            title: t('Play', { ns: 'NavigationBar' }),
+          },
+        ],
       },
       {
-        path: '/login',
+        path: 'login',
         element: <LoginPage />,
         title: t('Login', { ns: 'NavigationBar' }),
       },

@@ -1,11 +1,12 @@
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
+import { Link } from 'react-router-dom';
 
-export default function SentenceListTile({ title }: SentenceListTileProps) {
+export default function SentenceListTile({ title, id }: SentenceListTileProps) {
   return (
     <Box borderRadius={'5px'} border={`1px solid`} padding={'1em'}>
       <Typography>{title}</Typography>
       <Box>
-        <Button>Play</Button>
+        <Link to={`/lists/${id}`}>Play</Link>
       </Box>
     </Box>
   );
@@ -13,4 +14,5 @@ export default function SentenceListTile({ title }: SentenceListTileProps) {
 
 export interface SentenceListTileProps {
   title: string;
+  id: string;
 }
