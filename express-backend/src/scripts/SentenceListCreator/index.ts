@@ -36,25 +36,32 @@ export default class SentenceListCreator {
     }
 
     try {
-      const sentenceList = await SentenceList.create({
+      const createSentenceListPromise = SentenceList.create({
         title: this.title,
         isPublic: this.isPublic,
         owner: this.owner,
       });
 
-      await Promise.all(
-        this.sentencesAndTranslations.map(async (st) => {
-          const sentence = st[0];
+      const createTranslationsPromise = Promise.all(
+        this.sentencesAndTranslations.map((st) => {
           const translations = st.slice(1);
+          return Promise.all(translations.map((t) => Sentence.create(t)));
+        }),
+      );
 
-          const createdTranslations = await Promise.all(
-            translations.map((t) => Sentence.create(t)),
-          );
+      const [sentenceList, createdTranslations] = await Promise.all([
+        createSentenceListPromise,
+        createTranslationsPromise,
+      ]);
 
+      const createSentencesPromise = Promise.all(
+        this.sentencesAndTranslations.map((st, idx) => {
+          const sentence = st[0];
+          const translations = createdTranslations[idx];
           return Sentence.create({
             ...sentence,
             sentenceList,
-            translations: createdTranslations.map((t) => t._id),
+            translations: translations.map((t) => t._id),
           });
         }),
       );
@@ -78,7 +85,7 @@ export default class SentenceListCreator {
         ),
       ];
 
-      await Promise.all(
+      const createWordsPromise = Promise.all(
         words.map((wstr) => {
           const word = JSON.parse(wstr);
           return Word.create({
@@ -86,6 +93,8 @@ export default class SentenceListCreator {
           });
         }),
       );
+
+      await Promise.all([createSentencesPromise, createWordsPromise]);
 
       this.status = 'completed';
     } catch (ex) {

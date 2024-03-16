@@ -26,12 +26,12 @@ export default async function createUserSpecificScores(
   }
 
   user.configuredSentenceLists.push(new Types.ObjectId(req.params.id));
-  await user.save();
+  const updateUserPromise = user.save();
 
   const sentences = await Sentence.find({
     'sentenceList._id': req.params.id,
   });
-  await Promise.all(
+  const createSentenceScoresPromise = Promise.all(
     sentences.map((sentence) =>
       SentenceScore.create({
         sentence,
@@ -68,7 +68,7 @@ export default async function createUserSpecificScores(
     }),
   );
 
-  await Promise.all(
+  const createWordScorePromise = Promise.all(
     words.map((word) =>
       WordScore.create({
         owner: user,
@@ -77,4 +77,10 @@ export default async function createUserSpecificScores(
       }),
     ),
   );
+
+  await Promise.all([
+    updateUserPromise,
+    createSentenceScoresPromise,
+    createWordScorePromise,
+  ]);
 }

@@ -37,28 +37,37 @@ export async function getPlaylistForSentenceList(req: Request, res: Response) {
       .select('sentence')
   ).map((s) => s.sentence as SentenceType & { _id: ObjectId });
 
-  let sentencesWithWordScoresAndTranslations = await Promise.all(
-    sentences.map(async (sentence) => {
-      const lm = getLanguageModel(
-        sentence.textLanguageCode as unknown as LanguageCode,
-      );
-      const wordTexts = lm.getWords(sentence.text as string);
+  const wordScoresPromise = Promise.all(
+    sentences.map((sentence) => {
+      const lm = getLanguageModel(sentence.textLanguageCode);
+      const wordTexts = lm.getWords(sentence.text);
 
-      const wordScores = await WordScore.find({
+      return WordScore.find({
         'owner.userId': userId,
         'word.wordText': { $in: wordTexts },
       });
+    }),
+  );
 
-      const translations = await Sentence.find({
+  const translationsPromise = Promise.all(
+    sentences.map((sentence) =>
+      Sentence.find({
         textLanguageCode: { $in: translationLanguages },
         translations: { $elemMatch: { $eq: sentence._id } },
-      });
+      }),
+    ),
+  );
 
-      return {
-        sentence,
-        words: wordScores,
-        translations,
-      };
+  const [wordScores, translations] = await Promise.all([
+    wordScoresPromise,
+    translationsPromise,
+  ]);
+
+  const sentencesWithWordScoresAndTranslations = sentences.map(
+    (sentence, idx) => ({
+      sentence,
+      words: wordScores[idx],
+      translations: translations[idx],
     }),
   );
 

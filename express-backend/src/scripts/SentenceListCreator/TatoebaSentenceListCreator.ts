@@ -11,26 +11,33 @@ import { UserProfileType } from '../../user-profile';
 
 export default class TatoebaSentenceListCreator extends SentenceListCreator {
   private tatoebaSourceLanguage: LanguageAbbr;
+  private numPages: number;
 
   constructor(
     title: string,
     owner: UserProfileType,
     isPublic: boolean = true,
     languageCode: LanguageCode,
+    numPages: number = 100,
   ) {
     super(title, owner, isPublic);
     this.tatoebaSourceLanguage = LANG_CODE_TO_ABBR[
       languageCode
     ] as LanguageAbbr;
+    this.numPages = numPages;
   }
 
   private async fetchSentencesAndTranslations() {
-    for (
-      let query = `https://api.dev.tatoeba.org/unstable/sentences?lang=${this.tatoebaSourceLanguage}`;
-      query !== undefined;
+    const queries = [];
+    for (let page = 1; page <= this.numPages; ++page) {
+      const query = `https://api.dev.tatoeba.org/unstable/sentences?lang=${this.tatoebaSourceLanguage}&page=${page}`;
+      queries.push(query);
+    }
 
-    ) {
-      const resp = (await axios.get(query)).data;
+    const resps = (await Promise.all(queries.map((q) => axios.get(q)))).map(
+      (r) => r.data,
+    );
+    for (const resp of resps) {
       const sentenceData = resp.data;
 
       const sentencesWithTranslations = sentenceData.map((sd) => {
@@ -51,7 +58,6 @@ export default class TatoebaSentenceListCreator extends SentenceListCreator {
       });
 
       this.push(...sentencesWithTranslations);
-      query = resp.paging.next;
     }
   }
 

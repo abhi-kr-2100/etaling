@@ -17,8 +17,8 @@ import { UserProfile, UserProfileType } from '../../../user-profile';
 describe('Tatoeba Sentence List Creator', () => {
   let mock: MockAdapter;
 
-  const baseURL = `https://api.dev.tatoeba.org/unstable/sentences?lang=eng`;
-  const baseData = {
+  const page1URL = `https://api.dev.tatoeba.org/unstable/sentences?lang=eng&page=1`;
+  const page1Data = {
     data: [
       {
         id: 1276,
@@ -18664,9 +18664,9 @@ describe('Tatoeba Sentence List Creator', () => {
     },
   };
 
-  const nextURL =
+  const page2URL =
     'https://api.dev.tatoeba.org/unstable/sentences?lang=eng&page=2';
-  const nextData = {
+  const page2Data = {
     data: [
       {
         id: 2305,
@@ -22960,8 +22960,8 @@ describe('Tatoeba Sentence List Creator', () => {
   });
 
   beforeEach(() => {
-    mock.onGet(baseURL).reply(200, baseData);
-    mock.onGet(nextURL).reply(200, nextData);
+    mock.onGet(page1URL).reply(200, page1Data);
+    mock.onGet(page2URL).reply(200, page2Data);
   });
 
   afterEach(() => {
@@ -22979,12 +22979,13 @@ describe('Tatoeba Sentence List Creator', () => {
       alice,
       true,
       'en',
+      2,
     );
 
     await sentenceCreator.execute();
 
     expect(mock.history.get.length).toBe(2);
-    expect(mock.history.get[0].url).toBe(baseURL);
-    expect(mock.history.get[1].url).toBe(nextURL);
+    expect(mock.history.get[0].url).toBe(page1URL);
+    expect(mock.history.get[1].url).toBe(page2URL);
   });
 });
