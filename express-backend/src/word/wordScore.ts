@@ -5,7 +5,12 @@ import { userProfileSchema } from '../user-profile';
 export const scoreSchema = new Schema({
   repetitionNumber: { type: Number, min: 0, default: 0 },
   easinessFactor: { type: Number, default: 2.5 },
-  interRepetitionIntervalInDays: { type: Number, min: 1, required: false },
+  interRepetitionIntervalInDays: {
+    type: Number,
+    min: 1,
+    required: false,
+    default: 1,
+  },
   lastReviewDate: { type: Date, required: false },
 });
 
