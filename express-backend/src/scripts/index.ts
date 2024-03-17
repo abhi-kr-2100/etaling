@@ -1,19 +1,24 @@
 import 'dotenv/config';
 import '../db';
 
+import scriptLogger from './logger';
+
 import TatoebaSentenceListCreator from './SentenceListCreator/TatoebaSentenceListCreator';
 
 import { UserProfile } from '../user-profile';
 import { LanguageCode } from '../../../shared/languages';
 
+scriptLogger.debug(process.argv);
+
 if (process.argv.length < 3) {
+  scriptLogger.error('No operation specified.');
   process.exit();
 }
 
 switch (process.argv[2]) {
   case 'tatoeba': {
     if (process.argv.length !== 6) {
-      console.error('Missing required params: title, user._id, language');
+      scriptLogger.error('Missing required params: title, user._id, language');
       process.exit(1);
     }
 
@@ -28,6 +33,7 @@ switch (process.argv[2]) {
       },
     );
 
+    scriptLogger.info('Executing...');
     await sentenceListCreator.execute();
     break;
   }

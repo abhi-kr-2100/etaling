@@ -4,6 +4,8 @@ import SentenceList from '../../sentence-list';
 import { getLanguageModel } from '../../language-models';
 import Word from '../../word/word';
 
+import scriptLogger from '../logger';
+
 export default class SentenceListCreator {
   private title: string;
   private owner: UserProfileType;
@@ -45,10 +47,12 @@ export default class SentenceListCreator {
       const createTranslationsPromise = Promise.all(
         this.sentencesAndTranslations.map((st) => {
           const translations = st.slice(1);
+          scriptLogger.debug(translations);
           return Sentence.insertMany(translations);
         }),
       );
 
+      scriptLogger.info('Inserting translations...');
       const [sentenceList, createdTranslations] = await Promise.all([
         createSentenceListPromise,
         createTranslationsPromise,
@@ -98,12 +102,15 @@ export default class SentenceListCreator {
         },
       );
 
+      scriptLogger.info('Inserting sentences and words...');
       await Promise.all([createSentencesPromise, createWordsPromise]);
 
       this.status = 'completed';
     } catch (ex) {
       this.status = 'failed';
       throw ex;
+    } finally {
+      scriptLogger.info('Done!');
     }
   }
 }
