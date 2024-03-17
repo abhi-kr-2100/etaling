@@ -85,4 +85,6 @@ export default async function createUserSpecificScores(
     createSentenceScoresPromise,
     createWordScorePromise,
   ]);
+
+  return next();
 }

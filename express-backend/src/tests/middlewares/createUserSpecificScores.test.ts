@@ -98,6 +98,8 @@ describe('create user specific scores middleware', () => {
 
     testUser = await UserProfile.findById(testUser._id);
 
+    expect(next).toBeCalled();
+
     expect(testUser.configuredSentenceLists.length).toBe(1);
     expect(testUser.configuredSentenceLists[0].toString()).toBe(
       testSentenceList._id.toString(),
@@ -127,6 +129,8 @@ describe('create user specific scores middleware', () => {
 
     await createUserSpecificScores(req, res, next);
 
+    expect(next).toBeCalled();
+
     const sentenceScores = await SentenceScore.find({});
     const wordScores = await WordScore.find({});
 
@@ -138,6 +142,8 @@ describe('create user specific scores middleware', () => {
   it("should ignore requests that don't involve a sentence list", async () => {
     const req = createRequest();
     await createUserSpecificScores(req, res, next);
+
+    expect(next).toBeCalled();
 
     const sentenceScores = await SentenceScore.find({});
     const wordScores = await WordScore.find({});
