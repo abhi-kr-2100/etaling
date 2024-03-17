@@ -45,7 +45,7 @@ export default class SentenceListCreator {
       const createTranslationsPromise = Promise.all(
         this.sentencesAndTranslations.map((st) => {
           const translations = st.slice(1);
-          return Promise.all(translations.map((t) => Sentence.create(t)));
+          return Sentence.insertMany(translations);
         }),
       );
 
@@ -54,16 +54,19 @@ export default class SentenceListCreator {
         createTranslationsPromise,
       ]);
 
-      const createSentencesPromise = Promise.all(
+      const createSentencesPromise = Sentence.insertMany(
         this.sentencesAndTranslations.map((st, idx) => {
           const sentence = st[0];
           const translations = createdTranslations[idx];
-          return Sentence.create({
+          return {
             ...sentence,
             sentenceList,
             translations: translations.map((t) => t._id),
-          });
+          };
         }),
+        {
+          ordered: false,
+        },
       );
 
       const words = [
@@ -85,13 +88,14 @@ export default class SentenceListCreator {
         ),
       ];
 
-      const createWordsPromise = Promise.all(
+      const createWordsPromise = Word.insertMany(
         words.map((wstr) => {
           const word = JSON.parse(wstr);
-          return Word.create({
-            ...word,
-          });
+          return word;
         }),
+        {
+          ordered: false,
+        },
       );
 
       await Promise.all([createSentencesPromise, createWordsPromise]);

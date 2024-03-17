@@ -31,15 +31,16 @@ export default async function createUserSpecificScores(
   const sentences = await Sentence.find({
     'sentenceList._id': req.params.id,
   });
-  const createSentenceScoresPromise = Promise.all(
-    sentences.map((sentence) =>
-      SentenceScore.create({
-        sentence,
-        owner: user,
-        level: 0,
-        score: {},
-      }),
-    ),
+  const createSentenceScoresPromise = SentenceScore.insertMany(
+    sentences.map((sentence) => ({
+      sentence,
+      owner: user,
+      level: 0,
+      score: {},
+    })),
+    {
+      ordered: false,
+    },
   );
 
   const uniqueWordSchemas = [
@@ -68,14 +69,15 @@ export default async function createUserSpecificScores(
     }),
   );
 
-  const createWordScorePromise = Promise.all(
-    words.map((word) =>
-      WordScore.create({
-        owner: user,
-        score: {},
-        word,
-      }),
-    ),
+  const createWordScorePromise = WordScore.insertMany(
+    words.map((word) => ({
+      owner: user,
+      score: {},
+      word,
+    })),
+    {
+      ordered: false,
+    },
   );
 
   await Promise.all([
