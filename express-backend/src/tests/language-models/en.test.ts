@@ -28,6 +28,7 @@ describe('English language model', () => {
         'neptune',
       ],
     ],
+    [`"I'm Tom", he said.`, ["i'm", 'tom', 'he', 'said']],
   ];
 
   it("should report it's language to be English", () => {
