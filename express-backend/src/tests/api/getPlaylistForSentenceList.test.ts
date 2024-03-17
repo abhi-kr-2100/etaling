@@ -119,12 +119,6 @@ describe('GET playlist for a sentence list', () => {
     sentence1.translations.push(translation1_1._id);
     await sentence1.save();
 
-    translation1.translations.push(sentence1._id);
-    await translation1.save();
-
-    translation1_1.translations.push(sentence1._id);
-    await translation1_1.save();
-
     words.push(
       await Word.create({
         wordText: 'hello',
@@ -164,9 +158,6 @@ describe('GET playlist for a sentence list', () => {
 
     sentence2.translations.push(translation2._id);
     await sentence2.save();
-
-    translation2.translations.push(sentence2._id);
-    await translation2.save();
 
     words.push(
       await Word.create({

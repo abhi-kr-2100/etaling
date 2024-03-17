@@ -54,7 +54,7 @@ export async function getPlaylistForSentenceList(req: Request, res: Response) {
     sentences.map((sentence) =>
       Sentence.find({
         textLanguageCode: { $in: translationLanguages },
-        translations: { $elemMatch: { $eq: sentence._id } },
+        _id: { $in: sentence.translations },
       }),
     ),
   );
