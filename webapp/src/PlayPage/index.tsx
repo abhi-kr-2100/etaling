@@ -3,15 +3,17 @@ import { Navigate, useParams } from 'react-router-dom';
 import { getPlaylist, useAuthenticatedQuery } from '../queries';
 import { useAuth0 } from '@auth0/auth0-react';
 
+import Play, { SentenceData } from './Play';
+
 export default function PlayPage() {
   const { id: listId } = useParams();
   const { isAuthenticated, isLoading: isAuthenticating } = useAuth0();
 
   const {
-    data: playlist,
+    data: sentences,
     error: playlistFetchError,
     isLoading: isFetchingPlaylist,
-  } = useAuthenticatedQuery(
+  } = useAuthenticatedQuery<SentenceData[]>(
     {
       queryKey: [`playlist-${listId}`],
       queryFn: getPlaylist,
@@ -39,5 +41,5 @@ export default function PlayPage() {
     return <Navigate to={'/login'} replace />;
   }
 
-  return <Typography>{playlist}</Typography>;
+  return <Play sentences={sentences!} />;
 }
