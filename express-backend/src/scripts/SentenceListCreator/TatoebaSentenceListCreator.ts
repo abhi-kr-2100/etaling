@@ -8,8 +8,6 @@ import {
 } from '../../../../shared/languages';
 import { UserProfileType } from '../../user-profile';
 
-import scriptLogger from '../logger';
-
 export default class TatoebaSentenceListCreator extends SentenceListCreator {
   private tatoebaSourceLanguage: LanguageAbbr;
   private tatoebaTargetLanguages: LanguageAbbr[];
@@ -27,7 +25,6 @@ export default class TatoebaSentenceListCreator extends SentenceListCreator {
       ...defaultConfig,
       ...config,
     };
-    scriptLogger.debug(config);
 
     this.tatoebaSourceLanguage = LANG_CODE_TO_ABBR[
       config.fromLanguage
@@ -42,7 +39,6 @@ export default class TatoebaSentenceListCreator extends SentenceListCreator {
     const query =
       `https://api.dev.tatoeba.org/unstable/sentences?lang=${this.tatoebaSourceLanguage}&page=${currPageNum}` +
       `${this.tatoebaTargetLanguages.length === 1 ? `&trans=${this.tatoebaTargetLanguages[0]}` : ''}`;
-    scriptLogger.debug(query);
     return query;
   }
 
@@ -52,18 +48,14 @@ export default class TatoebaSentenceListCreator extends SentenceListCreator {
       const query = this.getQuery(page);
       queries.push(query);
     }
-    scriptLogger.debug(queries);
 
-    scriptLogger.info('Fetching pages...');
     const resps = (
       await Promise.all(
         queries.map((q) => {
-          scriptLogger.info(`Fetching ${q}...`);
           return axios.get(q);
         }),
       )
     ).map((r) => r.data);
-    scriptLogger.debug(resps);
 
     for (const resp of resps) {
       const sentenceData = resp.data;
@@ -87,8 +79,6 @@ export default class TatoebaSentenceListCreator extends SentenceListCreator {
 
       this.push(...sentencesWithTranslations);
     }
-
-    scriptLogger.info('Done!');
   }
 
   async execute() {
