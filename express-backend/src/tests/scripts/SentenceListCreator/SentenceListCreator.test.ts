@@ -116,6 +116,6 @@ describe('SentenceListCreator', () => {
     const testListCreator = new SentenceListCreator('Test list', alice);
     await testListCreator.execute();
 
-    await expect(testListCreator.execute).rejects.toThrow();
+    await expect(testListCreator.execute()).rejects.toThrow();
   });
 });
