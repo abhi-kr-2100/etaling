@@ -11,7 +11,8 @@ import { UserProfileType } from '../../user-profile';
 export default class TatoebaSentenceListCreator extends SentenceListCreator {
   private tatoebaSourceLanguage: LanguageAbbr;
   private tatoebaTargetLanguages: LanguageAbbr[];
-  private numPages: number;
+  private startPage: number;
+  private endPage: number;
 
   constructor(
     title: string,
@@ -29,10 +30,13 @@ export default class TatoebaSentenceListCreator extends SentenceListCreator {
     this.tatoebaSourceLanguage = LANG_CODE_TO_ABBR[
       config.fromLanguage
     ] as LanguageAbbr;
+
     this.tatoebaTargetLanguages = config.toLanguages.map(
       (l) => LANG_CODE_TO_ABBR[l] as LanguageAbbr,
     );
-    this.numPages = config.numPages;
+
+    this.startPage = config.startPage;
+    this.endPage = config.endPage;
   }
 
   private getQuery(currPageNum: number) {
@@ -44,7 +48,7 @@ export default class TatoebaSentenceListCreator extends SentenceListCreator {
 
   private async fetchSentencesAndTranslations() {
     const queries = [];
-    for (let page = 1; page <= this.numPages; ++page) {
+    for (let page = this.startPage; page <= this.endPage; ++page) {
       const query = this.getQuery(page);
       queries.push(query);
     }
@@ -90,11 +94,13 @@ export default class TatoebaSentenceListCreator extends SentenceListCreator {
 export interface TatoebaSentenceListCreatorConfig {
   fromLanguage?: LanguageCode;
   toLanguages?: LanguageCode[];
-  numPages?: number;
+  startPage?: number;
+  endPage?: number;
 }
 
 const defaultConfig = {
   fromLanguage: 'en',
   toLanguages: [],
-  numPages: 100,
+  startPage: 1,
+  endPage: 100,
 } as TatoebaSentenceListCreatorConfig;

@@ -22984,7 +22984,7 @@ describe('Tatoeba Sentence List Creator', () => {
       alice,
       true,
       {
-        numPages: 2,
+        endPage: 2,
       },
     );
 
@@ -23001,7 +23001,7 @@ describe('Tatoeba Sentence List Creator', () => {
       alice,
       true,
       {
-        numPages: 2,
+        endPage: 2,
         toLanguages: ['es'],
       },
     );
