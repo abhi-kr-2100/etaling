@@ -1,5 +1,7 @@
 import { LanguageCode } from '../../../shared/languages';
 import EnglishLM from './en';
+import SpanishLM from './es';
+import TurkishLM from './tr';
 
 export interface LanguageModel {
   getLanguage(): LanguageCode;
@@ -26,6 +28,10 @@ export function getLanguageModel(languageCode: LanguageCode) {
   switch (languageCode) {
     case 'en':
       return new EnglishLM();
+    case 'es':
+      return new SpanishLM();
+    case 'tr':
+      return new TurkishLM();
     default:
       throw new Error(
         `No suitable language model for language: ${languageCode}`,
