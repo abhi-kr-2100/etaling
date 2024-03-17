@@ -7,6 +7,7 @@ import { LanguageCode } from '../../../shared/languages';
 import WordScore from '../word/wordScore';
 import Sentence, { SentenceType } from '../sentence';
 import { ObjectId } from 'mongoose';
+import createUserSpecificScores from '../middlewares/createUserSpecificScores';
 
 const router = Router();
 
@@ -75,6 +76,6 @@ export async function getPlaylistForSentenceList(req: Request, res: Response) {
 }
 
 router.get('/', getSentenceLists);
-router.get('/:id', getPlaylistForSentenceList);
+router.get('/:id', createUserSpecificScores, getPlaylistForSentenceList);
 
 export default router;
