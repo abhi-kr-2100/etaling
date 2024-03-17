@@ -18,6 +18,7 @@ describe('Tatoeba Sentence List Creator', () => {
   let mock: MockAdapter;
 
   const page1URL = `https://api.dev.tatoeba.org/unstable/sentences?lang=eng&page=1`;
+  const page1URLLimited = `https://api.dev.tatoeba.org/unstable/sentences?lang=eng&page=1&trans=spa`;
   const page1Data = {
     data: [
       {
@@ -18666,6 +18667,8 @@ describe('Tatoeba Sentence List Creator', () => {
 
   const page2URL =
     'https://api.dev.tatoeba.org/unstable/sentences?lang=eng&page=2';
+  const page2URLLimited =
+    'https://api.dev.tatoeba.org/unstable/sentences?lang=eng&page=2&trans=spa';
   const page2Data = {
     data: [
       {
@@ -22961,7 +22964,9 @@ describe('Tatoeba Sentence List Creator', () => {
 
   beforeEach(() => {
     mock.onGet(page1URL).reply(200, page1Data);
+    mock.onGet(page1URLLimited).reply(200, page1Data);
     mock.onGet(page2URL).reply(200, page2Data);
+    mock.onGet(page2URLLimited).reply(200, page2Data);
   });
 
   afterEach(() => {
@@ -22978,8 +22983,9 @@ describe('Tatoeba Sentence List Creator', () => {
       'Test list',
       alice,
       true,
-      'en',
-      2,
+      {
+        numPages: 2,
+      },
     );
 
     await sentenceCreator.execute();
@@ -22987,5 +22993,23 @@ describe('Tatoeba Sentence List Creator', () => {
     expect(mock.history.get.length).toBe(2);
     expect(mock.history.get[0].url).toBe(page1URL);
     expect(mock.history.get[1].url).toBe(page2URL);
+  });
+
+  it('should limit translations to one language if given', async () => {
+    const sentenceCreator = new TatoebaSentenceListCreator(
+      'Test list',
+      alice,
+      true,
+      {
+        numPages: 2,
+        toLanguages: ['es'],
+      },
+    );
+
+    await sentenceCreator.execute();
+
+    expect(mock.history.get.length).toBe(2);
+    expect(mock.history.get[0].url).toBe(page1URLLimited);
+    expect(mock.history.get[1].url).toBe(page2URLLimited);
   });
 });

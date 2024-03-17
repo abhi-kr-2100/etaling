@@ -22,7 +22,10 @@ switch (process.argv[2]) {
       process.argv[3],
       user,
       true,
-      process.argv[5] as LanguageCode,
+      {
+        fromLanguage: process.argv[5] as LanguageCode,
+        toLanguages: ['en'],
+      },
     );
 
     await sentenceListCreator.execute();

@@ -11,26 +11,43 @@ import { UserProfileType } from '../../user-profile';
 
 export default class TatoebaSentenceListCreator extends SentenceListCreator {
   private tatoebaSourceLanguage: LanguageAbbr;
+  private tatoebaTargetLanguages: LanguageAbbr[];
   private numPages: number;
 
   constructor(
     title: string,
     owner: UserProfileType,
     isPublic: boolean = true,
-    languageCode: LanguageCode,
-    numPages: number = 100,
+    config: TatoebaSentenceListCreatorConfig = defaultConfig,
   ) {
     super(title, owner, isPublic);
+
+    config = {
+      ...defaultConfig,
+      ...config,
+    };
+
     this.tatoebaSourceLanguage = LANG_CODE_TO_ABBR[
-      languageCode
+      config.fromLanguage
     ] as LanguageAbbr;
-    this.numPages = numPages;
+    this.tatoebaTargetLanguages = config.toLanguages.map(
+      (l) => LANG_CODE_TO_ABBR[l] as LanguageAbbr,
+    );
+    this.numPages = config.numPages;
+  }
+
+  private getQuery(currPageNum: number) {
+    const query =
+      `https://api.dev.tatoeba.org/unstable/sentences?lang=${this.tatoebaSourceLanguage}&page=${currPageNum}` +
+      `${this.tatoebaTargetLanguages.length === 1 ? `&trans=${this.tatoebaTargetLanguages[0]}` : ''}`;
+
+    return query;
   }
 
   private async fetchSentencesAndTranslations() {
     const queries = [];
     for (let page = 1; page <= this.numPages; ++page) {
-      const query = `https://api.dev.tatoeba.org/unstable/sentences?lang=${this.tatoebaSourceLanguage}&page=${page}`;
+      const query = this.getQuery(page);
       queries.push(query);
     }
 
@@ -48,7 +65,7 @@ export default class TatoebaSentenceListCreator extends SentenceListCreator {
         };
         const translations = sd.translations
           .flat()
-          .filter((t) => LANGUAGE_ABBRS.includes(t.lang))
+          .filter((t) => this.tatoebaTargetLanguages.includes(t.lang))
           .map((t) => ({
             text: t.text,
             textLanguageCode: LANG_ABBR_TO_CODE[t.lang],
@@ -66,3 +83,15 @@ export default class TatoebaSentenceListCreator extends SentenceListCreator {
     await super.execute();
   }
 }
+
+export interface TatoebaSentenceListCreatorConfig {
+  fromLanguage?: LanguageCode;
+  toLanguages?: LanguageCode[];
+  numPages?: number;
+}
+
+const defaultConfig = {
+  fromLanguage: 'en',
+  toLanguages: [],
+  numPages: 100,
+} as TatoebaSentenceListCreatorConfig;
