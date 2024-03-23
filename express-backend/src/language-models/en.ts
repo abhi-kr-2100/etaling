@@ -73,4 +73,31 @@ export default class EnglishLM
       .map((word) => this.toLowerCase(word));
     return words;
   }
+
+  findWord(sentence: string, word: string): [number, number][] {
+    const wordSeparatorRE = this.getSeparatorRegex();
+    const wordRE = new RegExp(
+      `(^|${wordSeparatorRE.source})${this.toLowerCase(word)}(${wordSeparatorRE.source}|$)`,
+    );
+
+    const matches = [
+      ...this.toLowerCase(sentence).matchAll(new RegExp(wordRE, 'g')),
+    ];
+
+    // Matches start with all the matched characters including space and punctuations.
+    // We want matches to begin only with the first letter of the given word.
+    // We're making the following assumption here: the punctuations are different
+    // from letters in this language
+    const wordMatches = matches.map((m) => {
+      const matchedString = this.toLowerCase(m[0]);
+      const extraPrefixLen = matchedString.indexOf(this.toLowerCase(word[0]));
+
+      return [
+        m.index + extraPrefixLen,
+        m.index + extraPrefixLen + word.length,
+      ] as [number, number];
+    });
+
+    return wordMatches;
+  }
 }

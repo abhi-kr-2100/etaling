@@ -6,6 +6,7 @@ import TurkishLM from './tr';
 export interface LanguageModel {
   getLanguage(): LanguageCode;
   getWords(sentence: string): string[];
+  findWord(sentence: string, word: string): [number, number][];
 }
 
 /**

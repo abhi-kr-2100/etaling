@@ -60,4 +60,30 @@ describe('English language model', () => {
       expect(words).toEqual(sentence[1]);
     });
   });
+
+  it('should find all occurrences of word', () => {
+    const s1 = 'Into the void I go.';
+    const matches1 = lm.findWord(s1, 'i');
+    expect(matches1.length).toBe(1);
+    expect(matches1[0].length).toBe(2);
+    expect(matches1[0][0]).toBe(s1.indexOf(' I ') + 1);
+    expect(matches1[0][1]).toBe(s1.indexOf(' I ') + 2);
+
+    const s2 =
+      'El is a substring of level, a substring of ello, but el is not a substring of car.';
+    const matches2 = lm.findWord(s2, 'EL');
+    expect(matches2.length).toBe(2);
+    expect(matches2[0][0]).toBe(0);
+    expect(matches2[0][1]).toBe(2);
+    expect(matches2[1][0]).toBe(s2.indexOf(' el ') + 1);
+    expect(matches2[1][1]).toBe(s2.indexOf(' el ') + 3);
+
+    const s3 = 'This is a test of this.';
+    const matches3 = lm.findWord(s3, 'this');
+    expect(matches3.length).toBe(2);
+    expect(matches3[0][0]).toBe(0);
+    expect(matches3[0][1]).toBe('this'.length);
+    expect(matches3[1][0]).toBe(s3.indexOf('this'));
+    expect(matches3[1][1]).toBe(s3.indexOf('.'));
+  });
 });
