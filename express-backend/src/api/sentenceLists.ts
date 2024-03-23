@@ -6,7 +6,7 @@ import { getLanguageModel } from '../language-models';
 import { LanguageCode } from '../../../shared/languages';
 import WordScore from '../word/wordScore';
 import Sentence, { SentenceType } from '../sentence';
-import { ObjectId } from 'mongoose';
+import { ObjectId, Types } from 'mongoose';
 import createUserSpecificScores from '../middlewares/createUserSpecificScores';
 
 const router = Router();
@@ -33,7 +33,7 @@ export async function getPlaylistForSentenceList(req: Request, res: Response) {
       {
         $match: {
           'owner.userId': userId,
-          'sentence.sentenceList._id': sentenceListId,
+          'sentence.sentenceList._id': new Types.ObjectId(sentenceListId),
         },
       },
       {
@@ -64,10 +64,17 @@ export async function getPlaylistForSentenceList(req: Request, res: Response) {
       {
         $project: {
           sentence: true,
+          _id: true,
         },
       },
     ])
-  ).map((s) => s.sentence as SentenceType & { _id: ObjectId });
+  ).map(
+    (s) =>
+      ({ ...s.sentence, sentenceScoreId: s._id }) as SentenceType & {
+        _id: ObjectId;
+        sentenceScoreId: ObjectId;
+      },
+  );
 
   const wordScoresPromise = Promise.all(
     sentences.map((sentence) => {
