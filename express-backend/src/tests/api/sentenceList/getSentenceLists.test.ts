@@ -13,10 +13,10 @@ import { RequestOptions, createRequest, createResponse } from 'node-mocks-http';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
-import SentenceList from '../../sentence-list';
-import createUserProfile from '../../middlewares/createUserProfile';
-import { getSentenceLists } from '../../api/sentenceLists';
-import { UserProfile } from '../../user-profile';
+import SentenceList from '../../../sentence-list';
+import createUserProfile from '../../../middlewares/createUserProfile';
+import { getSentenceLists } from '../../../api/sentenceLists';
+import { UserProfile } from '../../../user-profile';
 
 describe('GET sentence list', () => {
   let mongoDB: MongoMemoryServer;

@@ -13,19 +13,21 @@ import mongoose, { Document, Types } from 'mongoose';
 
 import { createRequest, createResponse } from 'node-mocks-http';
 
-import { SentenceType } from '../../sentence';
-import { WordScoreType } from '../../word/wordScore';
-import { WordType } from '../../word/word';
-import { SentenceListType } from '../../sentence-list';
+import { SentenceType } from '../../../sentence';
+import { WordScoreType } from '../../../word/wordScore';
+import { WordType } from '../../../word/word';
+import { SentenceListType } from '../../../sentence-list';
 
-import { UserProfile, UserProfileType } from '../../user-profile';
-import Sentence from '../../sentence';
-import SentenceList from '../../sentence-list';
-import Word from '../../word/word';
-import WordScore from '../../word/wordScore';
+import { UserProfile, UserProfileType } from '../../../user-profile';
+import Sentence from '../../../sentence';
+import SentenceList from '../../../sentence-list';
+import Word from '../../../word/word';
+import WordScore from '../../../word/wordScore';
 
-import { getPlaylistForSentenceList } from '../../api/sentenceLists';
-import SentenceScore, { SentenceScoreType } from '../../sentence/sentenceScore';
+import { getPlaylistForSentenceList } from '../../../api/sentenceLists';
+import SentenceScore, {
+  SentenceScoreType,
+} from '../../../sentence/sentenceScore';
 
 describe('GET playlist for a sentence list', () => {
   let mongoDB: MongoMemoryServer;
