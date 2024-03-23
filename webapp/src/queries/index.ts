@@ -7,6 +7,7 @@ import {
 import axios from 'axios';
 
 import { SentenceListType } from '../../../express-backend/src/sentence-list';
+import { GradeType } from '../../../express-backend/src/word/scoringAlgorithm';
 import { useAuth0 } from '@auth0/auth0-react';
 import { LanguageCode } from '../../../shared/languages';
 
@@ -43,6 +44,26 @@ export function getPlaylist(
       },
     )
     .then((res) => res.data);
+}
+
+export function updateSentenceScore(
+  token: string,
+  sentenceScoreId: string,
+  grade: GradeType,
+) {
+  const queryParams = new URLSearchParams({
+    grade: (grade as number).toString(),
+  });
+
+  return axios.post(
+    `${import.meta.env.VITE_API_URI}/sentences/${sentenceScoreId}/updateScore?${queryParams.toString()}`,
+    undefined,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
 }
 
 export function useAuthenticatedQuery<
