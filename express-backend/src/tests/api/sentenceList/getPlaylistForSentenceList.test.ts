@@ -196,16 +196,11 @@ describe('GET playlist for a sentence list', () => {
         interRepetitionIntervalInDays: 6,
         lastReviewDate: new Date(),
       },
-      level: Math.max(
-        0,
-        6, // interRepetitionIntervalInDays - (today - lastReviewDate)
-      ),
     });
 
     sentenceScore2 = await SentenceScore.create({
       sentence: sentence2,
       owner: alice,
-      level: 0,
     });
   });
 

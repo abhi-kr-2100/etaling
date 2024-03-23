@@ -29,13 +29,44 @@ export async function getPlaylistForSentenceList(req: Request, res: Response) {
   const translationLanguages = [req.query.translationLang];
 
   const sentences = (
-    await SentenceScore.find({
-      'owner.userId': userId,
-      'sentence.sentenceList._id': sentenceListId,
-    })
-      .limit(limit)
-      .sort({ level: 1 })
-      .select('sentence')
+    await SentenceScore.aggregate([
+      {
+        $match: {
+          'owner.userId': userId,
+          'sentence.sentenceList._id': sentenceListId,
+        },
+      },
+      {
+        $set: {
+          level: {
+            $max: [
+              {
+                $subtract: [
+                  '$score.interRepetitionIntervalInDays',
+                  {
+                    $dateDiff: {
+                      startDate: '$score.lastReviewDate',
+                      unit: 'day',
+                      endDate: new Date(),
+                    },
+                  },
+                ],
+              },
+              0,
+            ],
+          },
+        },
+      },
+      {
+        $sort: { level: 1 },
+      },
+      ...(isNaN(limit) ? [] : [{ $limit: limit }]),
+      {
+        $project: {
+          sentence: true,
+        },
+      },
+    ])
   ).map((s) => s.sentence as SentenceType & { _id: ObjectId });
 
   const wordScoresPromise = Promise.all(
