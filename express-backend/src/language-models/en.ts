@@ -100,4 +100,8 @@ export default class EnglishLM
 
     return wordMatches;
   }
+
+  areEqual(s1: string, s2: string): boolean {
+    return this.toLowerCase(s1).trim() === this.toLowerCase(s2).trim();
+  }
 }

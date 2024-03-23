@@ -86,4 +86,10 @@ describe('English language model', () => {
     expect(matches3[1][0]).toBe(s3.indexOf('this'));
     expect(matches3[1][1]).toBe(s3.indexOf('.'));
   });
+
+  it('should be able to test strings for equality', () => {
+    expect(lm.areEqual('abc', 'Abc')).toBeTruthy();
+    expect(lm.areEqual(" i'm", "I'm")).toBeTruthy();
+    expect(lm.areEqual('fort', 'castle')).toBeFalsy();
+  });
 });

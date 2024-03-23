@@ -7,6 +7,7 @@ export interface LanguageModel {
   getLanguage(): LanguageCode;
   getWords(sentence: string): string[];
   findWord(sentence: string, word: string): [number, number][];
+  areEqual(s1: string, s2: string): boolean;
 }
 
 /**
