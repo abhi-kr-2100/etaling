@@ -14,7 +14,7 @@ export default function ItemList<T>({
       sx={{
         gap: style.gap ?? defaultStyle.gap,
       }}
-      flexDirection={orientation === 'horizontal' ? 'column' : 'row'}
+      flexDirection={orientation === 'horizontal' ? 'row' : 'column'}
     >
       {items.map((item, idx) => itemToTile(item, idx))}
     </Box>
@@ -29,7 +29,7 @@ export interface ItemListProps<T> {
   items: T[];
   itemToTile: (item: T, idx: number) => ReactNode;
 
-  orientation: 'horizontal' | 'vertical';
+  orientation?: 'horizontal' | 'vertical';
 
   style?: ItemListStyleProps;
 }
