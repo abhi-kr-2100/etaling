@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 
 import EtalingHeader from './EtalingHeader';
-import SupportedLanguagesCarousel from './SupportedLanguagesCarousel';
+import SupportedLanguagesList from './SupportedLanguagesList';
 
 import supportedLanguages from '../assets/language';
 
@@ -14,7 +14,7 @@ export default function Homepage() {
       alignItems={'center'}
     >
       <EtalingHeader />
-      <SupportedLanguagesCarousel supportedLanguages={supportedLanguages} />
+      <SupportedLanguagesList supportedLanguages={supportedLanguages} />
     </Box>
   );
 }

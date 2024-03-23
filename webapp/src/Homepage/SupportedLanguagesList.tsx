@@ -3,17 +3,17 @@ import { useTheme } from '@mui/material/styles';
 
 import { Property } from 'csstype';
 
-import Carousel from '../components/Carousel';
+import ItemList from '../components/ItemList';
 
 import { Language } from '../assets/language';
 
-export default function SupportedLanguagesCarousel({
+export default function SupportedLanguagesList({
   supportedLanguages,
-}: SupportedLanguagesCarouselProps) {
+}: SupportedLanguagesListProps) {
   const theme = useTheme();
 
   return (
-    <Carousel
+    <ItemList
       items={supportedLanguages}
       itemToTile={(lang) => (
         <LanguageTile
@@ -57,7 +57,7 @@ const defaultLanguageTileStyle: LanguageTileStyleProps = {
   bgcolor: 'white',
 };
 
-export interface SupportedLanguagesCarouselProps {
+export interface SupportedLanguagesListProps {
   supportedLanguages: Language[];
 }
 
