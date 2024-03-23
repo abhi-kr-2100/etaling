@@ -26,7 +26,7 @@ export interface CaseSensitiveLM extends LanguageModel {
   toUpperCase(s: string): string;
 }
 
-export function getLanguageModel(languageCode: LanguageCode) {
+export function getLanguageModel(languageCode: LanguageCode): LanguageModel {
   switch (languageCode) {
     case 'en':
       return new EnglishLM();
