@@ -29,7 +29,7 @@ export default function Questions({
   // Status of user's input before they submit the solution for checking. If
   // user input is a valid prefix of the complete solution, the user input is
   // considered a correct partial solution. Since, the user input at the very
-  // beginning is the empty string — which is a valid prefix of all string — the
+  // beginning is the empty string—which is a valid prefix of all string—the
   // initial value is partially correct.
   const [
     userEnteredPartialSolutionStatus,
@@ -42,6 +42,11 @@ export default function Questions({
     () =>
       getLanguageModel(questions[currQuestionIdx].sentence.textLanguageCode!),
     [questions, currQuestionIdx],
+  );
+
+  const { textBefore, maskedWord, textAfter, maskedWordId } = useMemo(
+    () => getFillInTheBlanksQuestion(questions[currQuestionIdx], lm),
+    [questions, currQuestionIdx, lm],
   );
 
   useEffect(() => {
@@ -60,7 +65,7 @@ export default function Questions({
           ? 'partially_correct'
           : 'incorrect',
     );
-  }, [userEnteredSolution]);
+  }, [userEnteredSolution, lm, maskedWord]);
 
   const checkUserEnteredSolution = () => {
     const isCorrect = lm.areEqual(maskedWord, userEnteredSolution);
@@ -84,11 +89,6 @@ export default function Questions({
         ? goToNextQuestion
         : onFinish;
 
-  const { textBefore, maskedWord, textAfter, maskedWordId } = useMemo(
-    () => getFillInTheBlanksQuestion(questions[currQuestionIdx], lm),
-    [questions, currQuestionIdx, lm],
-  );
-
   const statusColor = useMemo(
     () =>
       userEnteredSolutionStatus === 'correct' ||
@@ -98,7 +98,7 @@ export default function Questions({
             userEnteredPartialSolutionStatus === 'incorrect'
           ? theme.palette.error.main
           : undefined,
-    [userEnteredSolutionStatus, userEnteredPartialSolutionStatus],
+    [userEnteredSolutionStatus, userEnteredPartialSolutionStatus, theme],
   );
 
   return (
@@ -146,18 +146,18 @@ export interface QuestionsProps {
 
 function getFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
   const weights = question.words.map((word) => {
-    const lastReviewDate = word.score!.lastReviewDate
-      ? DateTime.fromISO(word.score!.lastReviewDate)
+    const lastReviewDate = word.score.lastReviewDate
+      ? DateTime.fromISO(word.score.lastReviewDate)
       : DateTime.now();
     const daysSinceLastReview = Math.round(
       -lastReviewDate.diffNow('days').days,
     );
     const level = Math.max(
       1,
-      word.score!.interRepetitionIntervalInDays! - daysSinceLastReview,
+      word.score.interRepetitionIntervalInDays! - daysSinceLastReview,
     );
 
-    return 1.0 / (level * word.score!.easinessFactor);
+    return 1.0 / (level * word.score.easinessFactor);
   });
 
   console.log(weights);
