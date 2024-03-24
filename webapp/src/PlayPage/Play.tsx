@@ -1,6 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { SentenceType } from '../../../express-backend/src/sentence';
-import { WordScoreType } from '../../../express-backend/src/word/wordScore';
+import {
+  ScoreType,
+  WordScoreType,
+} from '../../../express-backend/src/word/wordScore';
 import { updateSentenceScore, updateWordScore } from '../queries';
 import Questions from './Questions';
 import { useAuth0 } from '@auth0/auth0-react';
@@ -36,5 +39,10 @@ export interface PlayProps {
 export interface SentenceData {
   sentence: SentenceType & { sentenceScoreId: Types.ObjectId };
   translations: SentenceType[];
-  words: (WordScoreType & { _id: string })[];
+  // According to Mongoose lastReviewDate is of type Date, but it's actually
+  // a string
+  words: (Omit<WordScoreType, 'score'> & {
+    _id: string;
+    score: Omit<ScoreType, 'lastReviewDate'> & { lastReviewDate: string };
+  })[];
 }

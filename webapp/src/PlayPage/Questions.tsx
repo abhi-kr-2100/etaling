@@ -115,7 +115,7 @@ export interface QuestionsProps {
 function getFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
   const weights = question.words.map((word) => {
     const lastReviewDate = word.score!.lastReviewDate
-      ? DateTime.fromISO(word.score!.lastReviewDate as string)
+      ? DateTime.fromISO(word.score!.lastReviewDate)
       : DateTime.now();
     const daysSinceLastReview = Math.round(
       -lastReviewDate.diffNow('days').days,
