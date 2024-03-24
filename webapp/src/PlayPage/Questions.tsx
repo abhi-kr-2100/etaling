@@ -18,6 +18,8 @@ export default function Questions({
   afterCheck,
   onFinish,
 }: QuestionsProps) {
+  const theme = useTheme();
+
   const [currQuestionIdx, setCurrQuestionIdx] = useState(0);
 
   const [userEnteredSolution, setUserEnteredSolution] = useState('');
@@ -30,13 +32,6 @@ export default function Questions({
       getLanguageModel(questions[currQuestionIdx].sentence.textLanguageCode!),
     [questions, currQuestionIdx],
   );
-
-  const currAction: 'Check' | 'Finish' | 'Next' =
-    userEnteredSolutionStatus === 'unchecked'
-      ? 'Check'
-      : currQuestionIdx === questions.length - 1
-        ? 'Finish'
-        : 'Next';
 
   useEffect(() => {
     setUserEnteredSolution('');
@@ -52,12 +47,23 @@ export default function Questions({
 
   const goToNextQuestion = () => setCurrQuestionIdx((prev) => prev + 1);
 
+  const currAction: 'Check' | 'Finish' | 'Next' =
+    userEnteredSolutionStatus === 'unchecked'
+      ? 'Check'
+      : currQuestionIdx === questions.length - 1
+        ? 'Finish'
+        : 'Next';
+  const currActionFn =
+    currAction === 'Check'
+      ? checkUserEnteredSolution
+      : currAction === 'Next'
+        ? goToNextQuestion
+        : onFinish;
+
   const { textBefore, maskedWord, textAfter, maskedWordId } = useMemo(
     () => getFillInTheBlanksQuestion(questions[currQuestionIdx], lm),
     [questions, currQuestionIdx, lm],
   );
-
-  const theme = useTheme();
 
   return (
     <Box
@@ -75,6 +81,7 @@ export default function Questions({
         BlankInputProps={{
           value: userEnteredSolution,
           onChange: (e) => setUserEnteredSolution(e.target.value),
+          onKeyDown: (e) => (e.key === 'Enter' ? currActionFn() : undefined),
           autoFocus: true,
           InputProps: {
             style: {
@@ -91,17 +98,7 @@ export default function Questions({
           },
         }}
       />
-      <Button
-        onClick={
-          currAction == 'Check'
-            ? checkUserEnteredSolution
-            : currAction == 'Next'
-              ? goToNextQuestion
-              : onFinish
-        }
-      >
-        {currAction}
-      </Button>
+      <Button onClick={currActionFn}>{currAction}</Button>
     </Box>
   );
 }
