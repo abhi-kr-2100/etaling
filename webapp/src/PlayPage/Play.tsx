@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { SentenceType } from '../../../express-backend/src/sentence';
 import { WordScoreType } from '../../../express-backend/src/word/wordScore';
 import { updateSentenceScore } from '../queries';
@@ -7,6 +8,7 @@ import { Types } from 'mongoose';
 
 export default function Play({ sentences }: PlayProps) {
   const { getAccessTokenSilently } = useAuth0();
+  const navigate = useNavigate();
 
   return (
     <Questions
@@ -19,7 +21,7 @@ export default function Play({ sentences }: PlayProps) {
           wasCorrect ? 5 : 0,
         );
       }}
-      onFinish={() => console.log('Done!')}
+      onFinish={() => navigate('/lists')}
     />
   );
 }
