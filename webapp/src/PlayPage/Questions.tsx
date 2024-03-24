@@ -84,13 +84,16 @@ export default function Questions({
           onKeyDown: (e) => (e.key === 'Enter' ? currActionFn() : undefined),
           autoFocus: true,
           InputProps: {
-            style: {
-              color:
-                userEnteredSolutionStatus === 'correct'
-                  ? theme.palette.success.main
-                  : userEnteredSolutionStatus === 'incorrect'
-                    ? theme.palette.error.main
-                    : undefined,
+            inputProps: {
+              style: {
+                textAlign: 'center',
+                color:
+                  userEnteredSolutionStatus === 'correct'
+                    ? theme.palette.success.main
+                    : userEnteredSolutionStatus === 'incorrect'
+                      ? theme.palette.error.main
+                      : undefined,
+              },
             },
           },
           style: {
