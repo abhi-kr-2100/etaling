@@ -9,6 +9,9 @@ import {
 
 import sample from 'lodash/sample';
 import { useTheme } from '@mui/material/styles';
+import { DateTime } from 'luxon';
+import Chance from 'chance';
+const chance = new Chance();
 
 export default function Questions({
   questions,
@@ -110,7 +113,24 @@ export interface QuestionsProps {
 }
 
 function getFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
-  const wordToMask = sample(question.words)!;
+  const weights = question.words.map((word) => {
+    const lastReviewDate = word.score!.lastReviewDate
+      ? DateTime.fromISO(word.score!.lastReviewDate as string)
+      : DateTime.now();
+    const daysSinceLastReview = Math.round(
+      -lastReviewDate.diffNow('days').days,
+    );
+    const level = Math.max(
+      0,
+      word.score!.interRepetitionIntervalInDays! - daysSinceLastReview,
+    );
+
+    return level === 0 ? 1.0 : 1.0 / level;
+  });
+
+  console.log(weights);
+
+  const wordToMask = chance.weighted(question.words, weights);
   const occurrences = lm.findWord(
     question.sentence.text!,
     wordToMask.word!.wordText!,
