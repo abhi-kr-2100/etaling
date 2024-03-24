@@ -18,6 +18,8 @@ export default function PlayPage() {
       queryKey: [`playlist-${listId}`],
       queryFn: getPlaylist,
       enabled: isAuthenticated,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
     },
     listId,
     10,
