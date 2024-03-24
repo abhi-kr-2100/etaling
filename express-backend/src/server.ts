@@ -9,6 +9,7 @@ import createUserProfile from './middlewares/createUserProfile';
 
 import SentenceListRoutes from './api/sentenceLists';
 import SentenceRoutes from './api/sentences';
+import WordRoutes from './api/words';
 
 const PORT = process.env.PORT ?? 3000;
 
@@ -20,5 +21,6 @@ app.use(createUserProfile);
 
 app.use('/api/sentenceLists', SentenceListRoutes);
 app.use('/api/sentences', SentenceRoutes);
+app.use('/api/words', WordRoutes);
 
 app.listen(PORT, () => console.log(`Listening on http://localhost:${PORT}`));
