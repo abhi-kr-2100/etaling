@@ -52,13 +52,13 @@ export async function getPlaylistForSentenceList(req: Request, res: Response) {
                   },
                 ],
               },
-              0,
+              1,
             ],
           },
         },
       },
       {
-        $sort: { level: 1 },
+        $sort: { level: 1, 'score.easinessFactor': 1 },
       },
       ...(isNaN(limit) ? [] : [{ $limit: limit }]),
       {
