@@ -6,6 +6,7 @@ import {
   describe,
   expect,
   it,
+  jest,
 } from '@jest/globals';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose, { Document, Types } from 'mongoose';
@@ -74,8 +75,9 @@ describe('Update sentence score', () => {
       },
     });
     const res = createResponse();
+    const next = jest.fn();
 
-    await updateScore(req, res);
+    await updateScore(req, res, next);
     const updatedSentenceScore = await SentenceScore.findById(
       sampleSentenceScore._id,
     );
@@ -97,8 +99,9 @@ describe('Update sentence score', () => {
       },
     });
     const res = createResponse();
+    const next = jest.fn();
 
-    await updateScore(req, res);
+    await updateScore(req, res, next);
 
     expect(res.statusCode).toBe(400);
   });
@@ -113,8 +116,9 @@ describe('Update sentence score', () => {
       },
     });
     const res = createResponse();
+    const next = jest.fn();
 
-    await updateScore(req, res);
+    await updateScore(req, res, next);
 
     expect(res.statusCode).toBe(404);
   });
