@@ -124,6 +124,6 @@ function getFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
     textBefore,
     maskedWord: wordToMask.word!.wordText!,
     textAfter,
-    maskedWordId: wordToMask._id as string,
+    maskedWordId: wordToMask._id,
   };
 }
