@@ -8,7 +8,7 @@ import jwtCheck from './middlewares/jwt-check';
 import createUserProfile from './middlewares/createUserProfile';
 
 import SentenceListRoutes from './api/sentenceLists';
-import SentenceRoutes from './api/sentence';
+import SentenceRoutes from './api/sentences';
 
 const PORT = process.env.PORT ?? 3000;
 

@@ -15,7 +15,7 @@ import SentenceScore, {
   SentenceScoreType,
 } from '../../../sentence/sentenceScore';
 import { UserProfile, UserProfileType } from '../../../user-profile';
-import { updateScore } from '../../../api/sentence';
+import { updateScore } from '../../../api/sentences';
 
 describe('Update sentence score', () => {
   let mongoDB: MongoMemoryServer;
