@@ -153,11 +153,11 @@ function getFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
       -lastReviewDate.diffNow('days').days,
     );
     const level = Math.max(
-      0,
+      1,
       word.score!.interRepetitionIntervalInDays! - daysSinceLastReview,
     );
 
-    return level === 0 ? 1.0 : 1.0 / level;
+    return 1.0 / (level * word.score!.easinessFactor);
   });
 
   console.log(weights);
