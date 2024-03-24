@@ -83,6 +83,7 @@ export default function Questions({
           onChange: (e) => setUserEnteredSolution(e.target.value),
           onKeyDown: (e) => (e.key === 'Enter' ? currActionFn() : undefined),
           autoFocus: true,
+          autoComplete: 'off',
           InputProps: {
             inputProps: {
               style: {
