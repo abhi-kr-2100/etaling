@@ -92,4 +92,10 @@ describe('English language model', () => {
     expect(lm.areEqual(" i'm", "I'm")).toBeTruthy();
     expect(lm.areEqual('fort', 'castle')).toBeFalsy();
   });
+
+  it('should test if string starts with a prefix', () => {
+    expect(lm.startsWith(`"I'm done!" he said.`, '  i')).toBeTruthy();
+    expect(lm.startsWith(`I'm done for the day.`, "I'm. Done")).toBeTruthy();
+    expect(lm.startsWith("Let's call it a day.", "et's")).toBeFalsy();
+  });
 });

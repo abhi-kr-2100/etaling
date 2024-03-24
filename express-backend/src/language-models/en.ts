@@ -104,4 +104,10 @@ export default class EnglishLM
   areEqual(s1: string, s2: string): boolean {
     return this.toLowerCase(s1).trim() === this.toLowerCase(s2).trim();
   }
+
+  startsWith(s: string, testPrefix: string): boolean {
+    const sWords = this.getWords(s).join(' ');
+    const prefixWords = this.getWords(testPrefix).join(' ');
+    return sWords.startsWith(prefixWords);
+  }
 }

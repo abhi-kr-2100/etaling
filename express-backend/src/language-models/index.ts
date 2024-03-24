@@ -8,6 +8,7 @@ export interface LanguageModel {
   getWords(sentence: string): string[];
   findWord(sentence: string, word: string): [number, number][];
   areEqual(s1: string, s2: string): boolean;
+  startsWith(s: string, testPrefix: string): boolean;
 }
 
 /**
