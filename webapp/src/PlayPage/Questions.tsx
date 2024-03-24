@@ -26,6 +26,17 @@ export default function Questions({
   const [userEnteredSolutionStatus, setUserEnteredSolutionStatus] = useState<
     'unchecked' | 'correct' | 'incorrect'
   >('unchecked');
+  // Status of user's input before they submit the solution for checking. If
+  // user input is a valid prefix of the complete solution, the user input is
+  // considered a correct partial solution. Since, the user input at the very
+  // beginning is the empty string — which is a valid prefix of all string — the
+  // initial value is partially correct.
+  const [
+    userEnteredPartialSolutionStatus,
+    setUserEnteredPartialSolutionStatus,
+  ] = useState<'partially_correct' | 'fully_correct' | 'incorrect'>(
+    'partially_correct',
+  );
 
   const lm = useMemo(
     () =>
@@ -37,6 +48,19 @@ export default function Questions({
     setUserEnteredSolution('');
     setUserEnteredSolutionStatus('unchecked');
   }, [currQuestionIdx]);
+
+  useEffect(() => {
+    const isValidPrefix = lm.startsWith(maskedWord, userEnteredSolution);
+    const isComplete = lm.areEqual(maskedWord, userEnteredSolution);
+
+    setUserEnteredPartialSolutionStatus(
+      isComplete
+        ? 'fully_correct'
+        : isValidPrefix
+          ? 'partially_correct'
+          : 'incorrect',
+    );
+  }, [userEnteredSolution]);
 
   const checkUserEnteredSolution = () => {
     const isCorrect = lm.areEqual(maskedWord, userEnteredSolution);
@@ -65,6 +89,18 @@ export default function Questions({
     [questions, currQuestionIdx, lm],
   );
 
+  const statusColor = useMemo(
+    () =>
+      userEnteredSolutionStatus === 'correct' ||
+      userEnteredPartialSolutionStatus === 'fully_correct'
+        ? theme.palette.success.main
+        : userEnteredSolutionStatus === 'incorrect' ||
+            userEnteredPartialSolutionStatus === 'incorrect'
+          ? theme.palette.error.main
+          : undefined,
+    [userEnteredSolutionStatus, userEnteredPartialSolutionStatus],
+  );
+
   return (
     <Box
       display={'flex'}
@@ -88,12 +124,7 @@ export default function Questions({
             inputProps: {
               style: {
                 textAlign: 'center',
-                color:
-                  userEnteredSolutionStatus === 'correct'
-                    ? theme.palette.success.main
-                    : userEnteredSolutionStatus === 'incorrect'
-                      ? theme.palette.error.main
-                      : undefined,
+                color: statusColor,
               },
             },
           },
