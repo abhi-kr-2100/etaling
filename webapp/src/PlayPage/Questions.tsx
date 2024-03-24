@@ -44,12 +44,12 @@ export default function Questions({
     const isCorrect = lm.areEqual(maskedWord, userEnteredSolution);
     setUserEnteredSolutionStatus(isCorrect ? 'correct' : 'incorrect');
     setUserEnteredSolution(maskedWord);
-    afterCheck(isCorrect, currQuestionIdx);
+    afterCheck(isCorrect, currQuestionIdx, maskedWordId);
   };
 
   const goToNextQuestion = () => setCurrQuestionIdx((prev) => prev + 1);
 
-  const { textBefore, maskedWord, textAfter } = useMemo(
+  const { textBefore, maskedWord, textAfter, maskedWordId } = useMemo(
     () => getFillInTheBlanksQuestion(questions[currQuestionIdx], lm),
     [questions, currQuestionIdx, lm],
   );
@@ -105,7 +105,7 @@ export default function Questions({
 
 export interface QuestionsProps {
   questions: SentenceData[];
-  afterCheck: (wasCorrect: boolean, idx: number) => unknown;
+  afterCheck: (wasCorrect: boolean, idx: number, wordId: string) => unknown;
   onFinish: () => unknown;
 }
 
@@ -124,5 +124,6 @@ function getFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
     textBefore,
     maskedWord: wordToMask.word!.wordText!,
     textAfter,
+    maskedWordId: wordToMask._id as string,
   };
 }

@@ -66,6 +66,26 @@ export function updateSentenceScore(
   );
 }
 
+export function updateWordScore(
+  token: string,
+  wordScoreId: string,
+  grade: GradeType,
+) {
+  const queryParams = new URLSearchParams({
+    grade: (grade as number).toString(),
+  });
+
+  return axios.post(
+    `${import.meta.env.VITE_API_URI}/words/${wordScoreId}/updateScore?${queryParams.toString()}`,
+    undefined,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+}
+
 export function useAuthenticatedQuery<
   TQueryFnData = unknown,
   TError = DefaultError,
