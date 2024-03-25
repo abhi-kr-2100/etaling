@@ -1,16 +1,16 @@
 import axios from 'axios';
 import SentenceListCreator from '.';
 import {
-  LANG_ABBR_TO_CODE,
-  LANG_CODE_TO_ABBR,
-  LanguageAbbr,
+  TATOEBA_ABBR_TO_LANGUAGE_CODE,
+  LANG_CODE_TO_TATOEBA_ABBR,
+  TatoebaAbbr,
   LanguageCode,
 } from '../../../../shared/languages';
 import { UserProfileType } from '../../user-profile';
 
 export default class TatoebaSentenceListCreator extends SentenceListCreator {
-  private tatoebaSourceLanguage: LanguageAbbr;
-  private tatoebaTargetLanguages: LanguageAbbr[];
+  private tatoebaSourceLanguage: TatoebaAbbr;
+  private tatoebaTargetLanguages: TatoebaAbbr[];
   private startPage: number;
   private endPage: number;
 
@@ -27,12 +27,12 @@ export default class TatoebaSentenceListCreator extends SentenceListCreator {
       ...config,
     };
 
-    this.tatoebaSourceLanguage = LANG_CODE_TO_ABBR[
+    this.tatoebaSourceLanguage = LANG_CODE_TO_TATOEBA_ABBR[
       config.fromLanguage
-    ] as LanguageAbbr;
+    ] as TatoebaAbbr;
 
     this.tatoebaTargetLanguages = config.toLanguages.map(
-      (l) => LANG_CODE_TO_ABBR[l] as LanguageAbbr,
+      (l) => LANG_CODE_TO_TATOEBA_ABBR[l] as TatoebaAbbr,
     );
 
     this.startPage = config.startPage;
@@ -68,14 +68,15 @@ export default class TatoebaSentenceListCreator extends SentenceListCreator {
         const text = sd.text;
         const sentence = {
           text,
-          textLanguageCode: LANG_ABBR_TO_CODE[this.tatoebaSourceLanguage],
+          textLanguageCode:
+            TATOEBA_ABBR_TO_LANGUAGE_CODE[this.tatoebaSourceLanguage],
         };
         const translations = sd.translations
           .flat()
           .filter((t) => this.tatoebaTargetLanguages.includes(t.lang))
           .map((t) => ({
             text: t.text,
-            textLanguageCode: LANG_ABBR_TO_CODE[t.lang],
+            textLanguageCode: TATOEBA_ABBR_TO_LANGUAGE_CODE[t.lang],
           }));
 
         return [sentence, ...translations];
