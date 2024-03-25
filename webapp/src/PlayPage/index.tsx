@@ -12,7 +12,7 @@ export default function PlayPage() {
   const {
     data: sentences,
     error: playlistFetchError,
-    isLoading: isFetchingPlaylist,
+    isFetching: isFetchingPlaylist,
   } = useAuthenticatedQuery<SentenceData[]>(
     {
       queryKey: [`playlist-${listId}`],
