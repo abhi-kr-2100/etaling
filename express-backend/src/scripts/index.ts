@@ -56,3 +56,5 @@ switch (process.argv[2]) {
   default:
     console.error('Unknown operation');
 }
+
+console.info('Done!');
