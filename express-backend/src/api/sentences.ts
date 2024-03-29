@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response, Router } from 'express';
+
 import SentenceScore from '../sentence/sentenceScore';
+
 import getUpdatedWordScore, { GradeType } from '../word/scoringAlgorithm';
 
 export async function updateScore(

@@ -5,6 +5,7 @@ import TatoebaSentenceListCreator from './SentenceListCreator/TatoebaSentenceLis
 import FileSentenceListCreator from './SentenceListCreator/FileSentenceListCreator';
 
 import { UserProfile } from '../user-profile';
+
 import { LanguageCode } from '../../../shared/languages';
 
 if (process.argv.length < 3) {

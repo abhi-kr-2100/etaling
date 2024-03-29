@@ -2,12 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 
 import { Types } from 'mongoose';
 
-import { UserProfile } from '../user-profile';
-import Sentence from '../sentence';
+import Sentence, { SentenceType } from '../sentence';
 import SentenceScore from '../sentence/sentenceScore';
-import { getLanguageModel } from '../language-models';
 import Word from '../word/word';
 import WordScore from '../word/wordScore';
+import { UserProfile } from '../user-profile';
+
+import { getLanguageModel } from '../language-models';
 
 export default async function createUserSpecificScores(
   req: Request,
@@ -43,31 +44,7 @@ export default async function createUserSpecificScores(
     },
   );
 
-  const uniqueWordSchemas = [
-    ...new Set(
-      sentences
-        .map((sentence) => {
-          const lm = getLanguageModel(sentence.textLanguageCode);
-          const wordTexts = lm.getWords(sentence.text);
-          return wordTexts.map((wordText) => ({
-            wordText,
-            languageCode: sentence.textLanguageCode,
-          }));
-        })
-        .flat()
-        .map((wordSchema) => JSON.stringify(wordSchema)),
-    ),
-  ];
-
-  const words = await Promise.all(
-    uniqueWordSchemas.map((wordSchemaStr) => {
-      const wordSchema = JSON.parse(wordSchemaStr);
-      return Word.findOne({
-        wordText: wordSchema.wordText,
-        languageCode: wordSchema.languageCode,
-      });
-    }),
-  );
+  const words = await getUniqueWordsFromSentences(sentences);
 
   const createWordScorePromise = WordScore.insertMany(
     words.map((word) => ({
@@ -87,4 +64,32 @@ export default async function createUserSpecificScores(
   ]);
 
   return next();
+}
+
+async function getUniqueWordsFromSentences(sentences: SentenceType[]) {
+  const uniqueWordSchemas = [
+    ...new Set(
+      sentences
+        .map((sentence) => {
+          const lm = getLanguageModel(sentence.textLanguageCode);
+          const wordTexts = lm.getWords(sentence.text);
+          return wordTexts.map((wordText) => ({
+            wordText,
+            languageCode: sentence.textLanguageCode,
+          }));
+        })
+        .flat()
+        .map((wordSchema) => JSON.stringify(wordSchema)),
+    ),
+  ];
+
+  return Promise.all(
+    uniqueWordSchemas.map((wordSchemaStr) => {
+      const wordSchema = JSON.parse(wordSchemaStr);
+      return Word.findOne({
+        wordText: wordSchema.wordText,
+        languageCode: wordSchema.languageCode,
+      });
+    }),
+  );
 }

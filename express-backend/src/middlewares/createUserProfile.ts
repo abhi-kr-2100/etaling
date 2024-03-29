@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+
 import { UserProfile } from '../user-profile';
 
 export default async function createUserProfile(

@@ -1,12 +1,15 @@
 import axios from 'axios';
+
 import SentenceListCreator from '.';
+
+import { UserProfileType } from '../../user-profile';
+
 import {
   TATOEBA_ABBR_TO_LANGUAGE_CODE,
   LANG_CODE_TO_TATOEBA_ABBR,
   TatoebaAbbr,
   LanguageCode,
 } from '../../../../shared/languages';
-import { UserProfileType } from '../../user-profile';
 
 export default class TatoebaSentenceListCreator extends SentenceListCreator {
   private tatoebaSourceLanguage: TatoebaAbbr;

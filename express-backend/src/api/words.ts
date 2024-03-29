@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response, Router } from 'express';
+
 import WordScore from '../word/wordScore';
+
 import getUpdatedWordScore, { GradeType } from '../word/scoringAlgorithm';
 
 export async function updateScore(

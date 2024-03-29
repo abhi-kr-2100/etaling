@@ -1,13 +1,15 @@
 import { Request, Response, Router } from 'express';
+import { ObjectId, Types } from 'mongoose';
+
+import createUserSpecificScores from '../middlewares/createUserSpecificScores';
 
 import SentenceList from '../sentence-list';
 import SentenceScore from '../sentence/sentenceScore';
-import { getLanguageModel } from '../language-models';
-import { LanguageCode } from '../../../shared/languages';
 import WordScore from '../word/wordScore';
 import Sentence, { SentenceType } from '../sentence';
-import { ObjectId, Types } from 'mongoose';
-import createUserSpecificScores from '../middlewares/createUserSpecificScores';
+
+import { getLanguageModel } from '../language-models';
+import { LanguageCode } from '../../../shared/languages';
 
 const router = Router();
 
@@ -29,45 +31,7 @@ export async function getPlaylistForSentenceList(req: Request, res: Response) {
   const translationLanguages = [req.query.translationLang];
 
   const sentences = (
-    await SentenceScore.aggregate([
-      {
-        $match: {
-          'owner.userId': userId,
-          'sentence.sentenceList._id': new Types.ObjectId(sentenceListId),
-        },
-      },
-      {
-        $set: {
-          level: {
-            $max: [
-              {
-                $subtract: [
-                  '$score.interRepetitionIntervalInDays',
-                  {
-                    $dateDiff: {
-                      startDate: '$score.lastReviewDate',
-                      unit: 'day',
-                      endDate: new Date(),
-                    },
-                  },
-                ],
-              },
-              1,
-            ],
-          },
-        },
-      },
-      {
-        $sort: { level: 1, 'score.easinessFactor': 1 },
-      },
-      ...(isNaN(limit) ? [] : [{ $limit: limit }]),
-      {
-        $project: {
-          sentence: true,
-          _id: true,
-        },
-      },
-    ])
+    await getSentencesSortedBySentenceScoreLevel(userId, sentenceListId, limit)
   ).map(
     (s) =>
       ({ ...s.sentence, sentenceScoreId: s._id }) as SentenceType & {
@@ -76,30 +40,12 @@ export async function getPlaylistForSentenceList(req: Request, res: Response) {
       },
   );
 
-  const wordScoresPromise = Promise.all(
-    sentences.map((sentence) => {
-      const lm = getLanguageModel(sentence.textLanguageCode);
-      const wordTexts = lm.getWords(sentence.text);
-
-      return WordScore.find({
-        'owner.userId': userId,
-        'word.wordText': { $in: wordTexts },
-      });
-    }),
-  );
-
-  const translationsPromise = Promise.all(
-    sentences.map((sentence) =>
-      Sentence.find({
-        textLanguageCode: { $in: translationLanguages },
-        _id: { $in: sentence.translations },
-      }),
-    ),
-  );
-
   const [wordScores, translations] = await Promise.all([
-    wordScoresPromise,
-    translationsPromise,
+    getWordScoresForSentences(userId, sentences),
+    getTranslationsForSentences(
+      sentences,
+      translationLanguages as LanguageCode[],
+    ),
   ]);
 
   const sentencesWithWordScoresAndTranslations = sentences.map(
@@ -115,5 +61,82 @@ export async function getPlaylistForSentenceList(req: Request, res: Response) {
 
 router.get('/', getSentenceLists);
 router.get('/:id', createUserSpecificScores, getPlaylistForSentenceList);
+
+async function getSentencesSortedBySentenceScoreLevel(
+  userId: string,
+  sentenceListId: string,
+  limit: number,
+) {
+  return SentenceScore.aggregate([
+    {
+      $match: {
+        'owner.userId': userId,
+        'sentence.sentenceList._id': new Types.ObjectId(sentenceListId),
+      },
+    },
+    {
+      $set: {
+        level: {
+          $max: [
+            {
+              $subtract: [
+                '$score.interRepetitionIntervalInDays',
+                {
+                  $dateDiff: {
+                    startDate: '$score.lastReviewDate',
+                    unit: 'day',
+                    endDate: new Date(),
+                  },
+                },
+              ],
+            },
+            1,
+          ],
+        },
+      },
+    },
+    {
+      $sort: { level: 1, 'score.easinessFactor': 1 },
+    },
+    ...(isNaN(limit) ? [] : [{ $limit: limit }]),
+    {
+      $project: {
+        sentence: true,
+        _id: true,
+      },
+    },
+  ]);
+}
+
+async function getWordScoresForSentences(
+  userId: string,
+  sentences: SentenceType[],
+) {
+  return Promise.all(
+    sentences.map((sentence) => {
+      const lm = getLanguageModel(sentence.textLanguageCode);
+      const wordTexts = lm.getWords(sentence.text);
+
+      return WordScore.find({
+        'owner.userId': userId,
+        'word.wordText': { $in: wordTexts },
+      });
+    }),
+  );
+}
+
+async function getTranslationsForSentences(
+  sentences: SentenceType[],
+  translationLanguages: LanguageCode[],
+) {
+  return Promise.all(
+    sentences.map((sentence) =>
+      Sentence.find({
+        textLanguageCode: { $in: translationLanguages },
+        _id: { $in: sentence.translations },
+      }),
+    ),
+  );
+}
 
 export default router;

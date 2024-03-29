@@ -1,8 +1,9 @@
-import { UserProfileType } from '../../user-profile';
-import Sentence, { SentenceType } from '../../sentence';
 import SentenceList from '../../sentence-list';
-import { getLanguageModel } from '../../language-models';
+import Sentence, { SentenceType } from '../../sentence';
 import Word from '../../word/word';
+import { UserProfileType } from '../../user-profile';
+
+import { getLanguageModel } from '../../language-models';
 
 export default class SentenceListCreator {
   private title: string;
@@ -69,24 +70,9 @@ export default class SentenceListCreator {
         },
       );
 
-      const words = [
-        ...new Set(
-          this.sentencesAndTranslations
-            .map((st) => {
-              const sentence = st[0];
-              const lm = getLanguageModel(sentence.textLanguageCode);
-              const words = lm.getWords(sentence.text);
-
-              return words.map((wordText) =>
-                JSON.stringify({
-                  wordText,
-                  languageCode: sentence.textLanguageCode,
-                }),
-              );
-            })
-            .flat(),
-        ),
-      ];
+      const words = getUniqueWordsFromSentences(
+        this.sentencesAndTranslations.map((st) => st[0]),
+      );
 
       const createWordsPromise = Word.insertMany(
         words.map((wstr) => {
@@ -106,4 +92,24 @@ export default class SentenceListCreator {
       throw ex;
     }
   }
+}
+
+function getUniqueWordsFromSentences(sentences: SentenceType[]) {
+  return [
+    ...new Set(
+      sentences
+        .map((sentence) => {
+          const lm = getLanguageModel(sentence.textLanguageCode);
+          const words = lm.getWords(sentence.text);
+
+          return words.map((wordText) =>
+            JSON.stringify({
+              wordText,
+              languageCode: sentence.textLanguageCode,
+            }),
+          );
+        })
+        .flat(),
+    ),
+  ];
 }

@@ -1,7 +1,8 @@
-import { LanguageCode } from '../../../shared/languages';
 import EnglishLM from './en';
 import SpanishLM from './es';
 import TurkishLM from './tr';
+
+import { LanguageCode } from '../../../shared/languages';
 
 export interface LanguageModel {
   getLanguage(): LanguageCode;
