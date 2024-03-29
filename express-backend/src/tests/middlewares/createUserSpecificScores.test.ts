@@ -27,7 +27,10 @@ describe('create user specific scores middleware', () => {
   let testUser: Document<Types.ObjectId, {}, UserProfileType> & UserProfileType,
     testSentenceList: Document<Types.ObjectId, {}, SentenceListType> &
       SentenceListType,
+    testSentenceList2: Document<Types.ObjectId, {}, SentenceListType> &
+      SentenceListType,
     testSentence: Document<Types.ObjectId, {}, SentenceType> & SentenceType,
+    testSentence2: Document<Types.ObjectId, {}, SentenceType> & SentenceType,
     testWords = [] as (Document<Types.ObjectId, {}, WordType> & WordType)[];
 
   beforeAll(async () => {
@@ -44,8 +47,19 @@ describe('create user specific scores middleware', () => {
       owner: testUser,
     });
 
+    testSentenceList2 = await SentenceList.create({
+      title: 'Test Sentence List 2',
+      owner: testUser,
+    });
+
     testSentence = await Sentence.create({
       sentenceList: testSentenceList,
+      text: 'Test',
+      textLanguageCode: 'en',
+    });
+
+    testSentence2 = await Sentence.create({
+      sentenceList: testSentenceList2,
       text: 'Test',
       textLanguageCode: 'en',
     });
@@ -151,5 +165,35 @@ describe('create user specific scores middleware', () => {
     expect(testUser.configuredSentenceLists.length).toBe(0);
     expect(sentenceScores.length).toBe(0);
     expect(wordScores.length).toBe(0);
+  });
+
+  it('should not create duplicate word scores', async () => {
+    await createUserSpecificScores(req, res, next);
+
+    req.params.id = testSentenceList2._id.toString();
+    await createUserSpecificScores(req, res, next);
+
+    testUser = await UserProfile.findById(testUser._id);
+
+    expect(next).toBeCalled();
+
+    expect(testUser.configuredSentenceLists.length).toBe(2);
+    expect(
+      testUser.configuredSentenceLists.map((sl) => sl.toString()),
+    ).toContain(testSentenceList._id.toString());
+    expect(
+      testUser.configuredSentenceLists.map((sl) => sl.toString()),
+    ).toContain(testSentenceList2._id.toString());
+
+    const sentenceScores = await SentenceScore.find({});
+    expect(sentenceScores.length).toBe(2);
+
+    const wordScores = await WordScore.find({});
+    expect(wordScores.length).toBe(1);
+    expect(wordScores[0].word.wordText).toBe(testWords[0].wordText);
+    expect(wordScores[0].owner.userId).toBe(testUser.userId);
+    expect(wordScores[0].score.easinessFactor).toBe(2.5);
+    expect(wordScores[0].score.interRepetitionIntervalInDays).toBe(1);
+    expect(wordScores[0].score.repetitionNumber).toBe(0);
   });
 });

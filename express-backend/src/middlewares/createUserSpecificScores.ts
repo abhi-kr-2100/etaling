@@ -4,7 +4,7 @@ import { Types } from 'mongoose';
 
 import Sentence, { SentenceType } from '../sentence';
 import SentenceScore from '../sentence/sentenceScore';
-import Word from '../word/word';
+import Word, { WordType } from '../word/word';
 import WordScore from '../word/wordScore';
 import { UserProfile } from '../user-profile';
 
@@ -45,9 +45,13 @@ export default async function createUserSpecificScores(
   );
 
   const words = await getUniqueWordsFromSentences(sentences);
+  const isWordNew = await Promise.all(
+    words.map((w) => isANewWordForUser(w, user._id.toString())),
+  );
+  const newWords = words.filter((w, idx) => isWordNew[idx]);
 
   const createWordScorePromise = WordScore.insertMany(
-    words.map((word) => ({
+    newWords.map((word) => ({
       owner: user,
       score: {},
       word,
@@ -92,4 +96,14 @@ async function getUniqueWordsFromSentences(sentences: SentenceType[]) {
       });
     }),
   );
+}
+
+async function isANewWordForUser(word: WordType, userId: string) {
+  const foundWords = await WordScore.find({
+    'word.wordText': word.wordText,
+    'word.languageCode': word.languageCode,
+    'owner._id': userId,
+  });
+
+  return foundWords.length == 0;
 }
