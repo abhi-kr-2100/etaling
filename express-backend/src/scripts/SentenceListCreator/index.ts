@@ -1,6 +1,6 @@
 import SentenceList from '../../sentence-list';
 import Sentence, { SentenceType } from '../../sentence';
-import Word from '../../word/word';
+import Word, { WordType } from '../../word/word';
 import { UserProfileType } from '../../user-profile';
 
 import { getLanguageModel } from '../../language-models';
@@ -73,16 +73,12 @@ export default class SentenceListCreator {
       const words = getUniqueWordsFromSentences(
         this.sentencesAndTranslations.map((st) => st[0]),
       );
+      const isWordNew = await Promise.all(words.map(isNewWord));
+      const newWords = words.filter((_, idx) => isWordNew[idx]);
 
-      const createWordsPromise = Word.insertMany(
-        words.map((wstr) => {
-          const word = JSON.parse(wstr);
-          return word;
-        }),
-        {
-          ordered: false,
-        },
-      );
+      const createWordsPromise = Word.insertMany(newWords, {
+        ordered: false,
+      });
 
       await Promise.all([createSentencesPromise, createWordsPromise]);
 
@@ -111,5 +107,14 @@ function getUniqueWordsFromSentences(sentences: SentenceType[]) {
         })
         .flat(),
     ),
-  ];
+  ].map((wstr) => JSON.parse(wstr) as WordType);
+}
+
+async function isNewWord(word: WordType) {
+  const foundWords = await Word.find({
+    wordText: word.wordText,
+    languageCode: word.languageCode,
+  });
+
+  return foundWords.length === 0;
 }

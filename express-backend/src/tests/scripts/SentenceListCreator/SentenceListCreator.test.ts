@@ -118,4 +118,23 @@ describe('SentenceListCreator', () => {
 
     await expect(testListCreator.execute()).rejects.toThrow();
   });
+
+  it("shouldn't create duplicate words", async () => {
+    const testListCreator1 = new SentenceListCreator('Test list 1', alice);
+    testListCreator1.push([sentence1, translation1]);
+
+    const testListCreator2 = new SentenceListCreator('Test list 2', alice);
+    testListCreator2.push([sentence2, translation2]);
+
+    await testListCreator1.execute();
+    await testListCreator2.execute();
+
+    const words = await Word.find({});
+    expect(words.length).toBe(2);
+    expect(words.filter((w) => w.languageCode === 'en').length).toBe(2);
+
+    const wordTexts = words.map((w) => w.wordText);
+    expect(wordTexts).toContain('hello');
+    expect(wordTexts).toContain('world');
+  });
 });
