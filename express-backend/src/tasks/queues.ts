@@ -1,0 +1,1 @@
+export const CREATE_SCORES_QUEUE = 'CREATE_SCORES';
