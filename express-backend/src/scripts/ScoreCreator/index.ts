@@ -55,7 +55,7 @@ export default async function createScoresForUser(
   await user.save();
 }
 
-async function getUniqueWordsFromSentences(sentences: SentenceType[]) {
+export async function getUniqueWordsFromSentences(sentences: SentenceType[]) {
   const uniqueWords = [
     ...new Set(
       sentences
@@ -82,7 +82,7 @@ async function getUniqueWordsFromSentences(sentences: SentenceType[]) {
   );
 }
 
-async function isANewWordForUser(word: WordType, userId: string) {
+export async function isANewWordForUser(word: WordType, userId: string) {
   const foundWords = await WordScore.find({
     'word.wordText': word.wordText,
     'word.languageCode': word.languageCode,
