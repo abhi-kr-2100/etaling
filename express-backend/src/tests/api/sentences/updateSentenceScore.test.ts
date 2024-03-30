@@ -17,6 +17,8 @@ import SentenceScore, {
 } from '../../../sentence/sentenceScore';
 import { UserProfile, UserProfileType } from '../../../user-profile';
 import { updateScore } from '../../../api/sentences';
+import WordScore, { WordScoreType } from '../../../word/wordScore';
+import Word from '../../../word/word';
 
 describe('Update sentence score', () => {
   let mongoDB: MongoMemoryServer;
@@ -25,6 +27,7 @@ describe('Update sentence score', () => {
   let sampleSentence: SentenceType;
   let sampleSentenceScore: Document<Types.ObjectId, {}, SentenceScoreType> &
     SentenceScoreType;
+  let sampleWordScore: WordScoreType;
 
   beforeAll(async () => {
     mongoDB = await MongoMemoryServer.create();
@@ -37,6 +40,22 @@ describe('Update sentence score', () => {
     sampleSentence = await Sentence.create({
       text: 'Dummy!',
       textLanguageCode: 'en',
+    });
+
+    const sampleWord = await Word.create({
+      wordText: 'dummy',
+      languageCode: 'en',
+    });
+
+    sampleWordScore = await WordScore.create({
+      word: sampleWord,
+      owner: alice,
+      score: {
+        repetitionNumber: 0,
+        easinessFactor: 1.5,
+        interRepetitionIntervalInDays: 1,
+        lastReviewDate: new Date(),
+      },
     });
   });
 
@@ -86,6 +105,12 @@ describe('Update sentence score', () => {
     expect(updatedSentenceScore.score.repetitionNumber).toBe(1);
     expect(updatedSentenceScore.score.lastReviewDate.toDateString()).toBe(
       new Date().toDateString(),
+    );
+    expect(updatedSentenceScore.score.easinessFactor).toBe(
+      sampleWordScore.score.easinessFactor,
+    );
+    expect(updatedSentenceScore.score.interRepetitionIntervalInDays).toBe(
+      sampleWordScore.score.interRepetitionIntervalInDays,
     );
   });
 

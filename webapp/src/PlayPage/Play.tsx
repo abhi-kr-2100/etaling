@@ -19,12 +19,12 @@ export default function Play({ sentences }: PlayProps) {
       afterCheck={async (wasCorrect: boolean, idx: number, wordId: string) => {
         const token = await getAccessTokenSilently();
         await Promise.all([
+          updateWordScore(token, wordId, wasCorrect ? 5 : 0),
           updateSentenceScore(
             token,
             sentences[idx].sentence.sentenceScoreId.toString(),
             wasCorrect ? 5 : 0,
           ),
-          updateWordScore(token, wordId, wasCorrect ? 5 : 0),
         ]);
       }}
       onFinish={() => navigate('/lists')}

@@ -1,4 +1,4 @@
-import { ScoreType } from './wordScore';
+import { ScoreType, WordScoreType } from './wordScore';
 
 export type GradeType = 0 | 1 | 2 | 3 | 4 | 5;
 
@@ -33,4 +33,22 @@ export default function getUpdatedWordScore(
   updatedScore.lastReviewDate = new Date();
 
   return updatedScore;
+}
+
+export function getUpdatedSentenceScore(
+  grade: GradeType,
+  oldScore: ScoreType,
+  wordScores: WordScoreType[],
+) {
+  const updatedScore = getUpdatedWordScore(grade, oldScore);
+  const lowestWordScore = wordScores.reduce((prev, curr) =>
+    prev.score.easinessFactor < curr.score.easinessFactor ? prev : curr,
+  );
+
+  return {
+    ...updatedScore,
+    easinessFactor: lowestWordScore.score.easinessFactor,
+    interRepetitionIntervalInDays:
+      lowestWordScore.score.interRepetitionIntervalInDays,
+  };
 }
