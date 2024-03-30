@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import {
   getUniqueWordsFromSentences,
   isANewWordForUser,
@@ -8,9 +9,9 @@ import { UserProfileType } from '../user-profile';
 import WordScore from '../word/wordScore';
 
 export async function createSomeScoresForUser(
-  user: UserProfileType,
+  user: UserProfileType & { _id: Types.ObjectId },
   sentenceListId: string,
-  limit: number,
+  limit?: number,
 ) {
   const sentences = await Sentence.find({
     'sentenceList._id': sentenceListId,

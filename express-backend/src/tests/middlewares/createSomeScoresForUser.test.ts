@@ -63,7 +63,7 @@ describe('create some scores for user', () => {
       Array.from({ length: 100 }).map((_, idx) =>
         Sentence.create({
           text: `test${idx}`,
-          sentenceList: testSentenceList1,
+          sentenceList: testSentenceList2,
           textLanguageCode: 'en',
         }),
       ),
@@ -113,17 +113,8 @@ describe('create some scores for user', () => {
   });
 
   it('should not create duplicate sentence scores or word scores', async () => {
-    await createSomeScoresForUser(
-      testUser,
-      testSentenceList1._id.toString(),
-      testSentences1.length,
-    );
-
-    await createSomeScoresForUser(
-      testUser,
-      testSentenceList2._id.toString(),
-      testSentences2.length,
-    );
+    await createSomeScoresForUser(testUser, testSentenceList1._id.toString());
+    await createSomeScoresForUser(testUser, testSentenceList2._id.toString());
 
     const [sentenceScores, wordScores] = await Promise.all([
       SentenceScore.find({}),
