@@ -19,6 +19,7 @@ import createUserSpecificScores from '../../middlewares/createUserSpecificScores
 import Sentence, { SentenceType } from '../../sentence';
 import Word, { WordType } from '../../word/word';
 import SentenceScore from '../../sentence/sentenceScore';
+import { redisCluster } from '../../db/redis';
 
 describe('create user specific scores middleware', () => {
   let mongoDB: MongoMemoryServer;
@@ -34,6 +35,8 @@ describe('create user specific scores middleware', () => {
     testSentences2: (Document<Types.ObjectId, {}, SentenceType> &
       SentenceType)[],
     testWords: (Document<Types.ObjectId, {}, WordType> & WordType)[];
+
+  let lockKey1: string;
 
   beforeAll(async () => {
     mongoDB = await MongoMemoryServer.create();
@@ -54,6 +57,8 @@ describe('create user specific scores middleware', () => {
         owner: testUser,
       }),
     ]);
+
+    lockKey1 = `lock:${testUser._id.toString()}:${testSentenceList1._id.toString()}`;
 
     [testSentences1, testSentences2, testWords] = await Promise.all([
       Sentence.insertMany(
@@ -105,6 +110,8 @@ describe('create user specific scores middleware', () => {
   });
 
   afterEach(async () => {
+    await redisCluster.del(lockKey1);
+
     await WordScore.deleteMany({});
     await SentenceScore.deleteMany({});
 
@@ -182,5 +189,20 @@ describe('create user specific scores middleware', () => {
 
     expect(sentenceScores.length).toBe(testSentences1.length);
     expect(wordScores.length).toBe(testWords.length);
+  });
+
+  it('should do nothing if the list is being processed already', async () => {
+    await redisCluster.set(lockKey1, 'acquired');
+    await createUserSpecificScores(req, res, next);
+
+    expect(next).toBeCalled();
+
+    const [sentenceScores, wordScores] = await Promise.all([
+      SentenceScore.find({}),
+      WordScore.find({}),
+    ]);
+
+    expect(sentenceScores.length).toBe(0);
+    expect(wordScores.length).toBe(0);
   });
 });
