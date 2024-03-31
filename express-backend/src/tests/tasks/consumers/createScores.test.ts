@@ -39,6 +39,7 @@ describe('create user specific scores consumer', () => {
   let lockKey1: string;
 
   beforeAll(async () => {
+    await mongoose.disconnect();
     mongoDB = await MongoMemoryServer.create();
     const uri = mongoDB.getUri();
     await mongoose.connect(uri);
