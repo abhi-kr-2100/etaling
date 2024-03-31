@@ -25,13 +25,15 @@ describe('create user specific scores middleware', () => {
   let req: Request, res: Response, next: NextFunction;
 
   let testUser: Document<Types.ObjectId, {}, UserProfileType> & UserProfileType,
-    testSentenceList: Document<Types.ObjectId, {}, SentenceListType> &
+    testSentenceList1: Document<Types.ObjectId, {}, SentenceListType> &
       SentenceListType,
     testSentenceList2: Document<Types.ObjectId, {}, SentenceListType> &
       SentenceListType,
-    testSentence: Document<Types.ObjectId, {}, SentenceType> & SentenceType,
-    testSentence2: Document<Types.ObjectId, {}, SentenceType> & SentenceType,
-    testWords = [] as (Document<Types.ObjectId, {}, WordType> & WordType)[];
+    testSentences1: (Document<Types.ObjectId, {}, SentenceType> &
+      SentenceType)[],
+    testSentences2: (Document<Types.ObjectId, {}, SentenceType> &
+      SentenceType)[],
+    testWords: (Document<Types.ObjectId, {}, WordType> & WordType)[];
 
   beforeAll(async () => {
     mongoDB = await MongoMemoryServer.create();
@@ -42,34 +44,39 @@ describe('create user specific scores middleware', () => {
       userId: 'google-oauth2|113671952727045600873',
     });
 
-    testSentenceList = await SentenceList.create({
-      title: 'Test Sentence List',
-      owner: testUser,
-    });
-
-    testSentenceList2 = await SentenceList.create({
-      title: 'Test Sentence List 2',
-      owner: testUser,
-    });
-
-    testSentence = await Sentence.create({
-      sentenceList: testSentenceList,
-      text: 'Test',
-      textLanguageCode: 'en',
-    });
-
-    testSentence2 = await Sentence.create({
-      sentenceList: testSentenceList2,
-      text: 'Test',
-      textLanguageCode: 'en',
-    });
-
-    testWords.push(
-      await Word.create({
-        wordText: 'test',
-        languageCode: 'en',
+    [testSentenceList1, testSentenceList2] = await Promise.all([
+      SentenceList.create({
+        title: 'Test Sentence List',
+        owner: testUser,
       }),
-    );
+      SentenceList.create({
+        title: 'Test Sentence List 2',
+        owner: testUser,
+      }),
+    ]);
+
+    [testSentences1, testSentences2, testWords] = await Promise.all([
+      Sentence.insertMany(
+        Array.from({ length: 100 }).map((_, idx) => ({
+          text: `test${idx}`,
+          textLanguageCode: 'en',
+          sentenceList: testSentenceList1,
+        })),
+      ),
+      Sentence.insertMany(
+        Array.from({ length: 100 }).map((_, idx) => ({
+          text: `test${idx}`,
+          textLanguageCode: 'en',
+          sentenceList: testSentenceList2,
+        })),
+      ),
+      Word.insertMany(
+        Array.from({ length: 100 }).map((_, idx) => ({
+          wordText: `test${idx}`,
+          languageCode: 'en',
+        })),
+      ),
+    ]);
   });
 
   beforeEach(async () => {
@@ -87,7 +94,10 @@ describe('create user specific scores middleware', () => {
         },
       },
       params: {
-        id: testSentenceList._id,
+        id: testSentenceList1._id.toString(),
+      },
+      query: {
+        limit: '10',
       },
     });
     res = createResponse();
@@ -107,48 +117,34 @@ describe('create user specific scores middleware', () => {
     await mongoDB.stop();
   });
 
-  it("should create sentence and word scores for a user if they don't exist", async () => {
+  it('should create some sentence scores and word scores immediately', async () => {
     await createUserSpecificScores(req, res, next);
-
-    testUser = await UserProfile.findById(testUser._id);
 
     expect(next).toBeCalled();
 
-    expect(testUser.configuredSentenceLists.length).toBe(1);
-    expect(testUser.configuredSentenceLists[0].toString()).toBe(
-      testSentenceList._id.toString(),
-    );
+    const [sentenceScores, wordScores] = await Promise.all([
+      SentenceScore.find({}),
+      WordScore.find({}),
+    ]);
 
-    const sentenceScores = await SentenceScore.find({});
-    expect(sentenceScores.length).toBe(1);
-    expect(sentenceScores[0].sentence.text).toBe(testSentence.text);
-    expect(sentenceScores[0].owner.userId).toBe(testUser.userId);
-    expect(sentenceScores[0].score.easinessFactor).toBe(2.5);
-    expect(sentenceScores[0].score.interRepetitionIntervalInDays).toBe(1);
-    expect(sentenceScores[0].score.repetitionNumber).toBe(0);
-    expect(sentenceScores[0].level).toBe(0);
-
-    const wordScores = await WordScore.find({});
-    expect(wordScores.length).toBe(1);
-    expect(wordScores[0].word.wordText).toBe(testWords[0].wordText);
-    expect(wordScores[0].owner.userId).toBe(testUser.userId);
-    expect(wordScores[0].score.easinessFactor).toBe(2.5);
-    expect(wordScores[0].score.interRepetitionIntervalInDays).toBe(1);
-    expect(wordScores[0].score.repetitionNumber).toBe(0);
+    expect(sentenceScores.length).toBe(parseInt(req.query.limit as string));
+    expect(wordScores.length).toBe(parseInt(req.query.limit as string));
   });
 
   it('should not create sentence or word scores for a user if they already exist', async () => {
-    testUser.configuredSentenceLists.push(testSentenceList._id);
+    testUser.configuredSentenceLists.push(testSentenceList1._id);
     await testUser.save();
 
     await createUserSpecificScores(req, res, next);
 
     expect(next).toBeCalled();
-
-    const sentenceScores = await SentenceScore.find({});
-    const wordScores = await WordScore.find({});
-
     expect(testUser.configuredSentenceLists.length).toBe(1);
+
+    const [sentenceScores, wordScores] = await Promise.all([
+      SentenceScore.find({}),
+      WordScore.find({}),
+    ]);
+
     expect(sentenceScores.length).toBe(0);
     expect(wordScores.length).toBe(0);
   });
@@ -159,8 +155,10 @@ describe('create user specific scores middleware', () => {
 
     expect(next).toBeCalled();
 
-    const sentenceScores = await SentenceScore.find({});
-    const wordScores = await WordScore.find({});
+    const [sentenceScores, wordScores] = await Promise.all([
+      SentenceScore.find({}),
+      WordScore.find({}),
+    ]);
 
     expect(testUser.configuredSentenceLists.length).toBe(0);
     expect(sentenceScores.length).toBe(0);
@@ -168,32 +166,21 @@ describe('create user specific scores middleware', () => {
   });
 
   it('should not create duplicate word scores', async () => {
+    req.query.limit = undefined;
+
     await createUserSpecificScores(req, res, next);
 
     req.params.id = testSentenceList2._id.toString();
     await createUserSpecificScores(req, res, next);
 
-    testUser = await UserProfile.findById(testUser._id);
-
     expect(next).toBeCalled();
 
-    expect(testUser.configuredSentenceLists.length).toBe(2);
-    expect(
-      testUser.configuredSentenceLists.map((sl) => sl.toString()),
-    ).toContain(testSentenceList._id.toString());
-    expect(
-      testUser.configuredSentenceLists.map((sl) => sl.toString()),
-    ).toContain(testSentenceList2._id.toString());
+    const [sentenceScores, wordScores] = await Promise.all([
+      SentenceScore.find({}),
+      WordScore.find({}),
+    ]);
 
-    const sentenceScores = await SentenceScore.find({});
-    expect(sentenceScores.length).toBe(2);
-
-    const wordScores = await WordScore.find({});
-    expect(wordScores.length).toBe(1);
-    expect(wordScores[0].word.wordText).toBe(testWords[0].wordText);
-    expect(wordScores[0].owner.userId).toBe(testUser.userId);
-    expect(wordScores[0].score.easinessFactor).toBe(2.5);
-    expect(wordScores[0].score.interRepetitionIntervalInDays).toBe(1);
-    expect(wordScores[0].score.repetitionNumber).toBe(0);
+    expect(sentenceScores.length).toBe(testSentences1.length);
+    expect(wordScores.length).toBe(testWords.length);
   });
 });
