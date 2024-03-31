@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import './db';
+import './db/mongo';
 
 import express from 'express';
 

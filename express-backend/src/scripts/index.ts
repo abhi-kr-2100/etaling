@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import '../db';
+import '../db/mongo';
 
 import TatoebaSentenceListCreator from './SentenceListCreator/TatoebaSentenceListCreator';
 import FileSentenceListCreator from './SentenceListCreator/FileSentenceListCreator';
