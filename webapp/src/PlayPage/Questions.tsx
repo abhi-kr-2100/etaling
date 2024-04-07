@@ -69,10 +69,12 @@ export default function Questions({
     () =>
       userEnteredSolutionStatus === 'fully_correct'
         ? theme.palette.success.main
-        : userEnteredSolutionStatus === 'incorrect'
+        // A `partially_correct` solution should be considered wrong if user
+        // submits it for checking
+        : userEnteredSolutionStatus === 'incorrect' || isSolutionChecked
           ? theme.palette.error.main
           : undefined,
-    [userEnteredSolutionStatus, theme],
+    [userEnteredSolutionStatus, theme, isSolutionChecked],
   );
 
   useEffect(() => {
