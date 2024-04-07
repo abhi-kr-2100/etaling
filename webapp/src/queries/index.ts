@@ -86,6 +86,26 @@ export function updateWordScore(
   );
 }
 
+export function updateWordEasinessFactor(
+  token: string,
+  wordScoreId: string,
+  ef: number,
+) {
+  const queryParams = new URLSearchParams({
+    ef: ef.toString(),
+  });
+
+  return axios.post(
+    `${import.meta.env.VITE_API_URI}/words/${wordScoreId}/updateEF?${queryParams.toString()}`,
+    undefined,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+}
+
 export function useAuthenticatedQuery<
   TQueryFnData = unknown,
   TError = DefaultError,
