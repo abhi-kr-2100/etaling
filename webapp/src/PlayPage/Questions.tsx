@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { SentenceData } from './Play';
 import FillInTheBlanks from '../components/FillInTheBlanks';
 import { Box, Button } from '@mui/material';
@@ -22,22 +22,6 @@ export default function Questions({
 
   const [currQuestionIdx, setCurrQuestionIdx] = useState(0);
 
-  const [userEnteredSolution, setUserEnteredSolution] = useState('');
-  const [userEnteredSolutionStatus, setUserEnteredSolutionStatus] = useState<
-    'unchecked' | 'correct' | 'incorrect'
-  >('unchecked');
-  // Status of user's input before they submit the solution for checking. If
-  // user input is a valid prefix of the complete solution, the user input is
-  // considered a correct partial solution. Since, the user input at the very
-  // beginning is the empty string—which is a valid prefix of all string—the
-  // initial value is partially correct.
-  const [
-    userEnteredPartialSolutionStatus,
-    setUserEnteredPartialSolutionStatus,
-  ] = useState<'partially_correct' | 'fully_correct' | 'incorrect'>(
-    'partially_correct',
-  );
-
   const lm = useMemo(
     () =>
       getLanguageModel(questions[currQuestionIdx].sentence.textLanguageCode!),
@@ -49,39 +33,31 @@ export default function Questions({
     [questions, currQuestionIdx, lm],
   );
 
-  useEffect(() => {
-    setUserEnteredSolution('');
-    setUserEnteredSolutionStatus('unchecked');
-  }, [currQuestionIdx]);
-
-  useEffect(() => {
-    const isValidPrefix = lm.startsWith(maskedWord, userEnteredSolution);
-    const isComplete = lm.areEqual(maskedWord, userEnteredSolution);
-
-    setUserEnteredPartialSolutionStatus(
-      isComplete
-        ? 'fully_correct'
-        : isValidPrefix
-          ? 'partially_correct'
-          : 'incorrect',
-    );
-  }, [userEnteredSolution, lm, maskedWord]);
+  const {
+    userEnteredSolution,
+    setUserEnteredSolution,
+    userEnteredSolutionStatus,
+    reset,
+  } = useSolution(
+    (solution) => lm.startsWith(maskedWord, solution),
+    (solution) => lm.areEqual(maskedWord, solution),
+  );
 
   const checkUserEnteredSolution = () => {
+    setIsSolutionChecked(true);
     const isCorrect = lm.areEqual(maskedWord, userEnteredSolution);
-    setUserEnteredSolutionStatus(isCorrect ? 'correct' : 'incorrect');
-    setUserEnteredSolution(maskedWord);
     afterCheck(isCorrect, currQuestionIdx, maskedWordId);
   };
 
   const goToNextQuestion = () => setCurrQuestionIdx((prev) => prev + 1);
 
-  const currAction: 'Check' | 'Finish' | 'Next' =
-    userEnteredSolutionStatus === 'unchecked'
-      ? 'Check'
-      : currQuestionIdx === questions.length - 1
-        ? 'Finish'
-        : 'Next';
+  const [isSolutionChecked, setIsSolutionChecked] = useState(false);
+
+  const currAction: 'Check' | 'Finish' | 'Next' = !isSolutionChecked
+    ? 'Check'
+    : currQuestionIdx === questions.length - 1
+      ? 'Finish'
+      : 'Next';
   const currActionFn =
     currAction === 'Check'
       ? checkUserEnteredSolution
@@ -91,15 +67,18 @@ export default function Questions({
 
   const statusColor = useMemo(
     () =>
-      userEnteredSolutionStatus === 'correct' ||
-      userEnteredPartialSolutionStatus === 'fully_correct'
+      userEnteredSolutionStatus === 'fully_correct'
         ? theme.palette.success.main
-        : userEnteredSolutionStatus === 'incorrect' ||
-            userEnteredPartialSolutionStatus === 'incorrect'
+        : userEnteredSolutionStatus === 'incorrect'
           ? theme.palette.error.main
           : undefined,
-    [userEnteredSolutionStatus, userEnteredPartialSolutionStatus, theme],
+    [userEnteredSolutionStatus, theme],
   );
+
+  useEffect(() => {
+    reset();
+    setIsSolutionChecked(false);
+  }, [currQuestionIdx, reset, setIsSolutionChecked]);
 
   return (
     <Box
@@ -115,7 +94,7 @@ export default function Questions({
         textAfterBlank={textAfter}
         hint={questions[currQuestionIdx].translations[0].text!}
         BlankInputProps={{
-          value: userEnteredSolution,
+          value: isSolutionChecked ? maskedWord : userEnteredSolution,
           onChange: (e) => setUserEnteredSolution(e.target.value),
           onKeyDown: (e) => (e.key === 'Enter' ? currActionFn() : undefined),
           autoFocus: true,
@@ -142,6 +121,43 @@ export interface QuestionsProps {
   questions: SentenceData[];
   afterCheck: (wasCorrect: boolean, idx: number, wordId: string) => unknown;
   onFinish: () => unknown;
+}
+
+function useSolution(
+  isValidPrefix: (solution: string) => boolean,
+  isComplete: (solution: string) => boolean,
+) {
+  const [userEnteredSolution, setUserEnteredSolution] = useState('');
+  // If `userEnteredSolution` is a valid prefix of the complete solution, the
+  // `userEnteredSolutionStatus` is considered to be `partially_correct`. If it
+  // is a complete answer, the status is considered to be `fully_correct`.
+  // Since, the `userEnteredSolution` starts out as the empty string—which is a
+  // valid prefix of all strings—the initial value is `partially_correct`.
+  const [userEnteredSolutionStatus, setUserEnteredSolutionStatus] = useState<
+    'partially_correct' | 'fully_correct' | 'incorrect'
+  >('partially_correct');
+
+  useEffect(() => {
+    setUserEnteredSolutionStatus(
+      isComplete(userEnteredSolution)
+        ? 'fully_correct'
+        : isValidPrefix(userEnteredSolution)
+          ? 'partially_correct'
+          : 'incorrect',
+    );
+  }, [userEnteredSolution, isValidPrefix, isComplete]);
+
+  const reset = useCallback(() => {
+    setUserEnteredSolution('');
+    setUserEnteredSolutionStatus('partially_correct');
+  }, [setUserEnteredSolution, setUserEnteredSolutionStatus]);
+
+  return {
+    userEnteredSolution,
+    setUserEnteredSolution,
+    userEnteredSolutionStatus,
+    reset,
+  };
 }
 
 function getFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
