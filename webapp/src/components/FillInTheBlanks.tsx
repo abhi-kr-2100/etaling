@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactElement, cloneElement } from 'react';
 import { Box, TextField, TextFieldProps, Typography } from '@mui/material';
 
 export default function FillInTheBlanks({
@@ -25,9 +25,21 @@ export default function FillInTheBlanks({
           gap: 1.5,
         }}
       >
-        <Typography textAlign={'center'}>{componentsBeforeBlank}</Typography>
+        <Box>
+          {componentsBeforeBlank.map((component, idx) =>
+            cloneElement(component, {
+              key: idx,
+            }),
+          )}
+        </Box>
         <TextField {...BlankInputProps} />
-        <Typography textAlign={'center'}>{componentsAfterBlank}</Typography>
+        <Box>
+          {componentsAfterBlank.map((component, idx) =>
+            cloneElement(component, {
+              key: idx,
+            }),
+          )}
+        </Box>
       </Box>
       <Typography textAlign={'center'}>{hint}</Typography>
     </Box>
@@ -35,8 +47,8 @@ export default function FillInTheBlanks({
 }
 
 export interface FillInTheBlanksProps {
-  componentsBeforeBlank: ReactNode[];
-  componentsAfterBlank: ReactNode[];
+  componentsBeforeBlank: ReactElement[];
+  componentsAfterBlank: ReactElement[];
   hint?: string;
   BlankInputProps: TextFieldProps;
 }
