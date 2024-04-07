@@ -175,16 +175,21 @@ function useSolution(
 }
 
 function getFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
+  const questionText = question.sentence.text!;
+
   const { wordToMask, intervalToMask } = chooseMaskedWordWeighted(
-    question.sentence.text!,
+    questionText,
     question.words,
     lm,
   );
   const maskedWordComponent = (
-    <Word wordScore={wordToMask} wordText={wordToMask.word!.wordText!} />
+    <Word
+      wordScore={wordToMask}
+      wordText={questionText.slice(intervalToMask[0], intervalToMask[1])}
+    />
   );
 
-  const textBefore = question.sentence.text!.slice(0, intervalToMask[0]);
+  const textBefore = questionText.slice(0, intervalToMask[0]);
   const wordScoresBefore = lm
     .getWords(textBefore)
     .map(
@@ -197,7 +202,7 @@ function getFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
     lm,
   );
 
-  const textAfter = question.sentence.text!.slice(intervalToMask[1]);
+  const textAfter = questionText.slice(intervalToMask[1]);
   const wordScoresAfter = lm
     .getWords(textAfter)
     .map(
