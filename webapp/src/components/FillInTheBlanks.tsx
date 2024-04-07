@@ -6,6 +6,8 @@ export default function FillInTheBlanks({
   componentsAfterBlank,
   hint,
   BlankInputProps,
+  solved = false,
+  solution,
 }: FillInTheBlanksProps) {
   return (
     <Box
@@ -32,7 +34,15 @@ export default function FillInTheBlanks({
             }),
           )}
         </Box>
-        <TextField {...BlankInputProps} />
+        {solved ? (
+          solution?.map((component, idx) =>
+            cloneElement(component, {
+              key: idx,
+            }),
+          )
+        ) : (
+          <TextField {...BlankInputProps} />
+        )}
         <Box>
           {componentsAfterBlank.map((component, idx) =>
             cloneElement(component, {
@@ -51,4 +61,6 @@ export interface FillInTheBlanksProps {
   componentsAfterBlank: ReactElement[];
   hint?: string;
   BlankInputProps: TextFieldProps;
+  solved?: boolean;
+  solution?: ReactElement[];
 }

@@ -31,8 +31,9 @@ export default function Questions({
 
   const {
     wordComponentsBefore,
-    maskedWord,
     wordComponentsAfter,
+    maskedWordComponent,
+    maskedWord,
     maskedWordId,
   } = useMemo(
     () => getFillInTheBlanksQuestion(questions[currQuestionIdx], lm),
@@ -101,6 +102,8 @@ export default function Questions({
         componentsBeforeBlank={wordComponentsBefore}
         componentsAfterBlank={wordComponentsAfter}
         hint={questions[currQuestionIdx].translations[0].text!}
+        solved={isSolutionChecked}
+        solution={[maskedWordComponent]}
         BlankInputProps={{
           value: isSolutionChecked ? maskedWord : userEnteredSolution,
           onChange: (e) =>
@@ -177,6 +180,9 @@ function getFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
     question.words,
     lm,
   );
+  const maskedWordComponent = (
+    <Word wordScore={wordToMask} wordText={wordToMask.word!.wordText!} />
+  );
 
   const textBefore = question.sentence.text!.slice(0, intervalToMask[0]);
   const wordScoresBefore = lm
@@ -202,8 +208,9 @@ function getFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
 
   return {
     wordComponentsBefore,
-    maskedWord: wordToMask.word!.wordText!,
     wordComponentsAfter,
+    maskedWordComponent,
+    maskedWord: wordToMask.word!.wordText!,
     maskedWordId: wordToMask._id,
   };
 }
