@@ -103,7 +103,10 @@ export default function Questions({
         hint={questions[currQuestionIdx].translations[0].text!}
         BlankInputProps={{
           value: isSolutionChecked ? maskedWord : userEnteredSolution,
-          onChange: (e) => setUserEnteredSolution(e.target.value),
+          onChange: (e) =>
+            !isSolutionChecked
+              ? setUserEnteredSolution(e.target.value)
+              : undefined,
           onKeyDown: (e) => (e.key === 'Enter' ? currActionFn() : undefined),
           autoFocus: true,
           autoComplete: 'off',
