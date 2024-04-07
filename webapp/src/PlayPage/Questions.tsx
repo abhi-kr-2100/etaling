@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { SentenceData } from './Play';
+import { CorrectedWordScoreType, SentenceData } from './Play';
 import FillInTheBlanks from '../components/FillInTheBlanks';
 import { Box, Button } from '@mui/material';
 import {
@@ -161,37 +161,48 @@ function useSolution(
 }
 
 function getFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
-  const weights = question.words.map((word) => {
-    const lastReviewDate = word.score.lastReviewDate
-      ? DateTime.fromISO(word.score.lastReviewDate)
-      : DateTime.now();
-    const daysSinceLastReview = Math.round(
-      -lastReviewDate.diffNow('days').days,
-    );
-    const level = Math.max(
-      1,
-      word.score.interRepetitionIntervalInDays! - daysSinceLastReview,
-    );
-
-    return 1.0 / (level * word.score.easinessFactor);
-  });
-
-  console.log(weights);
-
-  const wordToMask = chance.weighted(question.words, weights);
-  const occurrences = lm.findWord(
+  const { wordToMask, intervalToMask } = chooseMaskedWordWeighted(
     question.sentence.text!,
-    wordToMask.word!.wordText!,
+    question.words,
+    lm,
   );
-  const occurrenceToMask = sample(occurrences)!;
 
-  const textBefore = question.sentence.text!.slice(0, occurrenceToMask[0]);
-  const textAfter = question.sentence.text!.slice(occurrenceToMask[1]);
+  const textBefore = question.sentence.text!.slice(0, intervalToMask[0]);
+  const textAfter = question.sentence.text!.slice(intervalToMask[1]);
 
   return {
     textBefore,
     maskedWord: wordToMask.word!.wordText!,
     textAfter,
     maskedWordId: wordToMask._id,
+  };
+}
+
+function chooseMaskedWordWeighted(
+  text: string,
+  wordScores: CorrectedWordScoreType[],
+  lm: LanguageModel,
+) {
+  const weights = wordScores.map((wordScore) => {
+    const lastReviewDate = wordScore.score?.lastReviewDate
+      ? DateTime.fromISO(wordScore.score.lastReviewDate)
+      : DateTime.now();
+    const daysSinceLastReview = Math.round(
+      -lastReviewDate.diffNow('days').days,
+    );
+    const level = Math.max(
+      1,
+      wordScore.score.interRepetitionIntervalInDays! - daysSinceLastReview,
+    );
+    return 1.0 / (level * wordScore.score.easinessFactor);
+  });
+
+  const wordToMask = chance.weighted(wordScores, weights);
+  const occurrences = lm.findWord(text, wordToMask.word!.wordText!);
+  const occurrenceToMask = sample(occurrences)!;
+
+  return {
+    wordToMask,
+    intervalToMask: occurrenceToMask,
   };
 }

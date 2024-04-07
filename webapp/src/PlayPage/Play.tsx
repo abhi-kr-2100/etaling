@@ -39,10 +39,12 @@ export interface PlayProps {
 export interface SentenceData {
   sentence: SentenceType & { sentenceScoreId: Types.ObjectId };
   translations: SentenceType[];
-  // According to Mongoose lastReviewDate is of type Date, but it's actually
-  // a string
-  words: (Omit<WordScoreType, 'score'> & {
-    _id: string;
-    score: Omit<ScoreType, 'lastReviewDate'> & { lastReviewDate: string };
-  })[];
+  words: CorrectedWordScoreType[];
 }
+
+// According to Mongoose lastReviewDate is of type Date, but it's actually a
+// string
+export type CorrectedWordScoreType = Omit<WordScoreType, 'score'> & {
+  _id: string;
+  score: Omit<ScoreType, 'lastReviewDate'> & { lastReviewDate: string };
+};
