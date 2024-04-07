@@ -11,6 +11,7 @@ import sample from 'lodash/sample';
 import { useTheme } from '@mui/material/styles';
 import { DateTime } from 'luxon';
 import Chance from 'chance';
+import Word from './Word';
 const chance = new Chance();
 
 export default function Questions({
@@ -28,7 +29,12 @@ export default function Questions({
     [questions, currQuestionIdx],
   );
 
-  const { textBefore, maskedWord, textAfter, maskedWordId } = useMemo(
+  const {
+    wordComponentsBefore,
+    maskedWord,
+    wordComponentsAfter,
+    maskedWordId,
+  } = useMemo(
     () => getFillInTheBlanksQuestion(questions[currQuestionIdx], lm),
     [questions, currQuestionIdx, lm],
   );
@@ -69,9 +75,9 @@ export default function Questions({
     () =>
       userEnteredSolutionStatus === 'fully_correct'
         ? theme.palette.success.main
-        // A `partially_correct` solution should be considered wrong if user
-        // submits it for checking
-        : userEnteredSolutionStatus === 'incorrect' || isSolutionChecked
+        : // A `partially_correct` solution should be considered wrong if user
+          // submits it for checking
+          userEnteredSolutionStatus === 'incorrect' || isSolutionChecked
           ? theme.palette.error.main
           : undefined,
     [userEnteredSolutionStatus, theme, isSolutionChecked],
@@ -92,8 +98,8 @@ export default function Questions({
       }}
     >
       <FillInTheBlanks
-        textBeforeBlank={textBefore}
-        textAfterBlank={textAfter}
+        componentsBeforeBlank={wordComponentsBefore}
+        componentsAfterBlank={wordComponentsAfter}
         hint={questions[currQuestionIdx].translations[0].text!}
         BlankInputProps={{
           value: isSolutionChecked ? maskedWord : userEnteredSolution,
@@ -170,12 +176,31 @@ function getFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
   );
 
   const textBefore = question.sentence.text!.slice(0, intervalToMask[0]);
+  const wordScoresBefore = lm
+    .getWords(textBefore)
+    .map(
+      (word) =>
+        question.words.find((wordScore) => wordScore.word!.wordText === word)!,
+    );
+  const wordComponentsBefore = getWordComponents(
+    textBefore,
+    wordScoresBefore,
+    lm,
+  );
+
   const textAfter = question.sentence.text!.slice(intervalToMask[1]);
+  const wordScoresAfter = lm
+    .getWords(textAfter)
+    .map(
+      (word) =>
+        question.words.find((wordScore) => wordScore.word!.wordText === word)!,
+    );
+  const wordComponentsAfter = getWordComponents(textAfter, wordScoresAfter, lm);
 
   return {
-    textBefore,
+    wordComponentsBefore,
     maskedWord: wordToMask.word!.wordText!,
-    textAfter,
+    wordComponentsAfter,
     maskedWordId: wordToMask._id,
   };
 }
@@ -207,4 +232,46 @@ function chooseMaskedWordWeighted(
     wordToMask,
     intervalToMask: occurrenceToMask,
   };
+}
+
+function getWordComponents(
+  text: string,
+  wordScores: CorrectedWordScoreType[],
+  lm: LanguageModel,
+) {
+  const wordToIntervalIdx = new Map<string, number>();
+
+  const components = [];
+  let previousInterval: [number, number] | undefined;
+  for (const wordScore of wordScores) {
+    const wordText = wordScore.word!.wordText!;
+
+    if (!wordToIntervalIdx.has(wordText)) {
+      wordToIntervalIdx.set(wordText, 0);
+    }
+
+    const currentIntervalIdx = wordToIntervalIdx.get(wordText)!;
+    const currentInterval = lm.findWord(text, wordText)[currentIntervalIdx];
+    wordToIntervalIdx.set(wordText, currentIntervalIdx + 1);
+
+    const originalWordText = text.slice(currentInterval[0], currentInterval[1]);
+    const currentComponent = (
+      <Word wordText={originalWordText} wordScore={wordScore} />
+    );
+
+    const previousText = previousInterval
+      ? text.slice(previousInterval[1], currentInterval[0])
+      : text.slice(0, currentInterval[0]);
+    const previousComponent = <span>{previousText}</span>;
+
+    components.push(previousComponent, currentComponent);
+
+    previousInterval = currentInterval;
+  }
+
+  if (previousInterval) {
+    components.push(<span>{text.slice(previousInterval[1])}</span>);
+  }
+
+  return components;
 }
