@@ -69,9 +69,9 @@ export default function Questions({
     () =>
       userEnteredSolutionStatus === 'fully_correct'
         ? theme.palette.success.main
-        // A `partially_correct` solution should be considered wrong if user
-        // submits it for checking
-        : userEnteredSolutionStatus === 'incorrect' || isSolutionChecked
+        : // A `partially_correct` solution should be considered wrong if user
+          // submits it for checking
+          userEnteredSolutionStatus === 'incorrect' || isSolutionChecked
           ? theme.palette.error.main
           : undefined,
     [userEnteredSolutionStatus, theme, isSolutionChecked],
@@ -97,7 +97,10 @@ export default function Questions({
         hint={questions[currQuestionIdx].translations[0].text!}
         BlankInputProps={{
           value: isSolutionChecked ? maskedWord : userEnteredSolution,
-          onChange: (e) => setUserEnteredSolution(e.target.value),
+          onChange: (e) =>
+            !isSolutionChecked
+              ? setUserEnteredSolution(e.target.value)
+              : undefined,
           onKeyDown: (e) => (e.key === 'Enter' ? currActionFn() : undefined),
           autoFocus: true,
           autoComplete: 'off',
