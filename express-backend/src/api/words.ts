@@ -30,7 +30,33 @@ export async function updateScore(
   res.status(200).json({ message: 'Score updated.' });
 }
 
+export async function updateEasinessFactor(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const ef = Number.parseFloat(req.query.ef as string);
+
+  if (ef < 1.3) {
+    res.status(400);
+    return next('Easiness factor must not be less than 1.3.');
+  }
+
+  const wordScoreId = req.params.id;
+  const wordScore = await WordScore.findById(wordScoreId);
+  if (wordScore === null) {
+    res.status(404);
+    return next('Word score was not found.');
+  }
+
+  wordScore.score.easinessFactor = ef;
+  await wordScore.save();
+
+  res.status(200).json({ message: 'Easiness factor updated.' });
+}
+
 const router = Router();
 router.post('/:id/updateScore', updateScore);
+router.post('/:id/updateEF', updateEasinessFactor);
 
 export default router;
