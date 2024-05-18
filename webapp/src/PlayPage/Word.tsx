@@ -15,10 +15,7 @@ import { updateWordEasinessFactor } from '../queries';
 
 export default function Word({ wordText, wordScore }: WordProps) {
   const [ef, setEF] = useState(wordScore.score.easinessFactor);
-  const color = useMemo(
-    () => (ef < 2.5 ? 'error' : ef === 2.5 ? 'info' : 'success'),
-    [ef],
-  );
+  const color = ef < 2.5 ? 'error' : ef === 2.5 ? 'info' : 'success';
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
