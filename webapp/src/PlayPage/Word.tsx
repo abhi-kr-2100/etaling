@@ -15,25 +15,14 @@ import { updateWordEasinessFactor } from '../queries';
 
 export default function Word({ wordText, wordScore }: WordProps) {
   const { color, setEF } = useWordColor(wordScore);
-
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const open = Boolean(anchorEl);
+  const { anchorEl, isOpen, onOpen, onClose } = useAnchorEl();
 
   return (
     <>
       <Chip
         clickable
         component={Typography}
-        onClick={handleClick}
+        onClick={onOpen}
         color={color}
         size="small"
         label={wordText || wordScore.word!.wordText!}
@@ -42,9 +31,9 @@ export default function Word({ wordText, wordScore }: WordProps) {
         wordScore={wordScore}
         setEF={setEF}
         PopoverProps={{
-          open,
+          open: isOpen,
           anchorEl,
-          onClose: handleClose,
+          onClose,
           anchorOrigin: {
             vertical: 'bottom',
             horizontal: 'left',
@@ -153,6 +142,26 @@ function useWordColor(wordScore: CorrectedWordScoreType) {
   return {
     color,
     setEF,
+  };
+}
+
+function useAnchorEl() {
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const isOpen = Boolean(anchorEl);
+
+  const onOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const onClose = () => {
+    setAnchorEl(null);
+  };
+
+  return {
+    anchorEl,
+    isOpen,
+    onOpen,
+    onClose,
   };
 }
 
