@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Button,
@@ -16,6 +16,11 @@ import { updateWordEasinessFactor } from '../queries';
 export default function Word({ wordText, wordScore }: WordProps) {
   const [ef, setEF] = useState(wordScore.score.easinessFactor);
   const color = ef < 2.5 ? 'error' : ef === 2.5 ? 'info' : 'success';
+
+  useEffect(
+    () => setEF(wordScore.score.easinessFactor),
+    [wordScore.score.easinessFactor],
+  );
 
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
