@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import {
+  DependencyList,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useState,
+} from 'react';
 import {
   Box,
   Button,
@@ -56,7 +62,9 @@ function WordPopover({
   const { t } = useTranslation('WordDifficulty');
   const { t: tc } = useTranslation('common');
 
-  const [ef, setEF] = useState(wordScore.score.easinessFactor);
+  const [ef, setEF] = useSyncedState(wordScore.score.easinessFactor, [
+    wordScore.score.easinessFactor,
+  ]);
 
   const MIN_EF = 1.3;
   const DEFAULT_EF = 2.5;
@@ -69,23 +77,20 @@ function WordPopover({
     setParentEF(ef);
   };
 
-  const marks = useMemo(
-    () => [
-      {
-        value: MIN_EF,
-        label: t('Difficult'),
-      },
-      {
-        value: DEFAULT_EF,
-        label: t('Neutral'),
-      },
-      {
-        value: MAX_EF,
-        label: t('Easy'),
-      },
-    ],
-    [wordScore.score.easinessFactor],
-  );
+  const marks = [
+    {
+      value: MIN_EF,
+      label: t('Difficult'),
+    },
+    {
+      value: DEFAULT_EF,
+      label: t('Neutral'),
+    },
+    {
+      value: MAX_EF,
+      label: t('Easy'),
+    },
+  ];
 
   return (
     <Popover {...PopoverProps}>
@@ -163,6 +168,16 @@ function useAnchorEl() {
     onOpen,
     onClose,
   };
+}
+
+function useSyncedState<T>(
+  initial: T,
+  dependencies: DependencyList,
+): [T, Dispatch<SetStateAction<T>>] {
+  const [state, setState] = useState(initial);
+  useEffect(() => setState(dependencies[0] as T), dependencies);
+
+  return [state, setState];
 }
 
 interface WordPopoverProps {
