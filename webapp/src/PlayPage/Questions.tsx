@@ -7,13 +7,10 @@ import {
   getLanguageModel,
 } from '../../../express-backend/src/language-models';
 
-import sample from 'lodash/sample';
 import { useTheme } from '@mui/material/styles';
 import { DateTime } from 'luxon';
-import Chance from 'chance';
 import Word from './Word';
 import { useAppSelector } from '../redux/hooks';
-const chance = new Chance();
 
 export default function Questions({ afterCheck, onFinish }: QuestionsProps) {
   const theme = useTheme();
@@ -252,13 +249,36 @@ function chooseMaskedWordWeighted(
     return 1.0 / (level * wordScore.score.easinessFactor);
   });
 
-  const wordToMask = chance.weighted(wordScores, weights);
+  // const wordToMask = chance.weighted(wordScores, weights);
+  const { maxIdx } = maxWithIdx(weights)!;
+  const wordToMask = wordScores[maxIdx];
   const occurrences = lm.findWord(text, wordToMask.word!.wordText!);
-  const occurrenceToMask = sample(occurrences)!;
+  // const occurrenceToMask = sample(occurrences)!;
+  const occurrenceToMask = occurrences[0];
 
   return {
     wordToMask,
     intervalToMask: occurrenceToMask,
+  };
+}
+
+function maxWithIdx(items: number[]) {
+  if (items.length === 0) {
+    return;
+  }
+
+  let max = items[0];
+  let maxIdx = 0;
+  for (let i = 1; i < items.length; ++i) {
+    if (max < items[i]) {
+      max = items[i];
+      maxIdx = i;
+    }
+  }
+
+  return {
+    max,
+    maxIdx,
   };
 }
 
