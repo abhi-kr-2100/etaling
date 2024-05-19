@@ -12,22 +12,24 @@ import { useTheme } from '@mui/material/styles';
 import { DateTime } from 'luxon';
 import Chance from 'chance';
 import Word from './Word';
+import { useAppSelector } from '../redux/hooks';
 const chance = new Chance();
 
-export default function Questions({
-  questions,
-  afterCheck,
-  onFinish,
-}: QuestionsProps) {
+export default function Questions({ afterCheck, onFinish }: QuestionsProps) {
   const theme = useTheme();
+  const questions = useAppSelector((state) => state.playlist.sentences);
 
   const [currQuestionIdx, setCurrQuestionIdx] = useState(0);
 
-  const lm = useMemo(
-    () =>
-      getLanguageModel(questions[currQuestionIdx].sentence.textLanguageCode!),
-    [questions, currQuestionIdx],
-  );
+  const lm = useMemo(() => {
+    if (questions.length === 0) {
+      // data hasn't loaded yet
+      return;
+    }
+    return getLanguageModel(
+      questions[currQuestionIdx].sentence.textLanguageCode!,
+    );
+  }, [questions, currQuestionIdx]);
 
   const {
     wordComponentsBefore,
@@ -35,10 +37,20 @@ export default function Questions({
     maskedWordComponent,
     maskedWord,
     maskedWordId,
-  } = useMemo(
-    () => getFillInTheBlanksQuestion(questions[currQuestionIdx], lm),
-    [questions, currQuestionIdx, lm],
-  );
+  } = useMemo(() => {
+    if (questions.length === 0) {
+      // data hasn't loaded yet
+      return {
+        wordComponentsBefore: undefined,
+        wordComponentsAfter: undefined,
+        maskedWordComponent: undefined,
+        maskedWord: undefined,
+        maskedWordId: undefined,
+      };
+    }
+
+    return getFillInTheBlanksQuestion(questions[currQuestionIdx], lm!);
+  }, [questions, currQuestionIdx, lm]);
 
   const {
     userEnteredSolution,
@@ -46,14 +58,14 @@ export default function Questions({
     userEnteredSolutionStatus,
     reset,
   } = useSolution(
-    (solution) => lm.startsWith(maskedWord, solution),
-    (solution) => lm.areEqual(maskedWord, solution),
+    (solution) => lm?.startsWith(maskedWord!, solution) ?? false,
+    (solution) => lm?.areEqual(maskedWord!, solution) ?? false,
   );
 
   const checkUserEnteredSolution = () => {
     setIsSolutionChecked(true);
-    const isCorrect = lm.areEqual(maskedWord, userEnteredSolution);
-    afterCheck(isCorrect, currQuestionIdx, maskedWordId);
+    const isCorrect = lm!.areEqual(maskedWord!, userEnteredSolution);
+    afterCheck(isCorrect, currQuestionIdx, maskedWordId!);
   };
 
   const goToNextQuestion = () => setCurrQuestionIdx((prev) => prev + 1);
@@ -86,6 +98,11 @@ export default function Questions({
     setIsSolutionChecked(false);
   }, [currQuestionIdx, reset, setIsSolutionChecked]);
 
+  if (questions.length === 0) {
+    // data hasn't loaded yet
+    return;
+  }
+
   return (
     <Box
       display={'flex'}
@@ -96,11 +113,11 @@ export default function Questions({
       }}
     >
       <FillInTheBlanks
-        componentsBeforeBlank={wordComponentsBefore}
-        componentsAfterBlank={wordComponentsAfter}
+        componentsBeforeBlank={wordComponentsBefore!}
+        componentsAfterBlank={wordComponentsAfter!}
         hint={questions[currQuestionIdx].translations[0].text!}
         solved={isSolutionChecked}
-        solution={[maskedWordComponent]}
+        solution={[maskedWordComponent!]}
         BlankInputProps={{
           value: isSolutionChecked ? maskedWord : userEnteredSolution,
           onChange: (e) =>
@@ -119,7 +136,7 @@ export default function Questions({
             },
           },
           style: {
-            width: `${maskedWord.length + 2.5}ch`,
+            width: `${maskedWord!.length + 2.5}ch`,
           },
         }}
       />
@@ -129,7 +146,6 @@ export default function Questions({
 }
 
 export interface QuestionsProps {
-  questions: SentenceData[];
   afterCheck: (wasCorrect: boolean, idx: number, wordId: string) => unknown;
   onFinish: () => unknown;
 }

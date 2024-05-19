@@ -38,10 +38,10 @@ const playlistSlice = createSlice({
             grade,
             word.score as unknown as ScoreType,
           );
-          state.sentences[sidx].words[widx].score =
-            updatedScore as unknown as Omit<ScoreType, 'lastReviewDate'> & {
-              lastReviewDate: string;
-            };
+          state.sentences[sidx].words[widx].score = {
+            ...updatedScore,
+            lastReviewDate: updatedScore.lastReviewDate!.toISOString(),
+          };
         });
       });
     },

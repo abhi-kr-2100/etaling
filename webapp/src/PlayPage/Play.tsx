@@ -32,7 +32,6 @@ export default function Play({ sentences }: PlayProps) {
 
   return (
     <Questions
-      questions={sentences}
       afterCheck={async (wasCorrect: boolean, idx: number, wordId: string) => {
         const sentenceScoreId =
           sentences[idx].sentence.sentenceScoreId.toString();
