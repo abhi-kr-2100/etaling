@@ -14,6 +14,11 @@ interface ScoreUpdateInfo {
   grade: GradeType;
 }
 
+interface EFUpdateInfo {
+  id: string;
+  ef: number;
+}
+
 const initialState: PlaylistState = {
   sentences: [],
 };
@@ -46,12 +51,29 @@ const playlistSlice = createSlice({
       });
     },
 
+    updatedEF(state, action: PayloadAction<EFUpdateInfo>) {
+      const { id: wordId, ef } = action.payload;
+      state.sentences.forEach((sentence, sidx) => {
+        sentence.words.forEach((word, widx) => {
+          if (word._id !== wordId) {
+            return;
+          }
+
+          state.sentences[sidx].words[widx].score.easinessFactor = ef;
+        });
+      });
+    },
+
     destroyedPlaylist(state) {
       state.sentences = [];
     },
   },
 });
 
-export const { createdPlaylist, updatedWordScore, destroyedPlaylist } =
-  playlistSlice.actions;
+export const {
+  createdPlaylist,
+  updatedWordScore,
+  updatedEF,
+  destroyedPlaylist,
+} = playlistSlice.actions;
 export default playlistSlice.reducer;

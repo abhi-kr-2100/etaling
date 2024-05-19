@@ -18,6 +18,8 @@ import { CorrectedWordScoreType } from './Play';
 import { useTranslation } from 'react-i18next';
 import { useAuth0 } from '@auth0/auth0-react';
 import { updateWordEasinessFactor } from '../queries';
+import { useAppDispatch } from '../redux/hooks';
+import { updatedEF } from './playlistSlice';
 
 export default function Word({ wordText, wordScore }: WordProps) {
   const { color, setEF } = useWordColor(wordScore);
@@ -66,6 +68,8 @@ function WordPopover({
     wordScore.score.easinessFactor,
   ]);
 
+  const dispatch = useAppDispatch();
+
   const MIN_EF = 1.3;
   const DEFAULT_EF = 2.5;
   const MAX_EF = Math.max(3.0, wordScore.score.easinessFactor);
@@ -75,6 +79,12 @@ function WordPopover({
     const token = await getAccessTokenSilently();
     await updateWordEasinessFactor(token, wordScore._id, ef);
     setParentEF(ef);
+    dispatch(
+      updatedEF({
+        id: wordScore._id,
+        ef,
+      }),
+    );
   };
 
   const marks = [
