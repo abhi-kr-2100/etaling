@@ -8,24 +8,42 @@ import { updateSentenceScore, updateWordScore } from '../queries';
 import Questions from './Questions';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Types } from 'mongoose';
+import { useEffect } from 'react';
+import { useAppDispatch } from '../redux/hooks';
+import {
+  createdPlaylist,
+  destroyedPlaylist,
+  updatedWordScore,
+} from './playlistSlice';
+import { GradeType } from '../../../express-backend/src/word/scoringAlgorithm';
 
 export default function Play({ sentences }: PlayProps) {
   const { getAccessTokenSilently } = useAuth0();
   const navigate = useNavigate();
 
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(createdPlaylist(sentences));
+    return () => {
+      dispatch(destroyedPlaylist());
+    };
+  }, [dispatch, sentences]);
+
   return (
     <Questions
       questions={sentences}
       afterCheck={async (wasCorrect: boolean, idx: number, wordId: string) => {
+        const sentenceScoreId =
+          sentences[idx].sentence.sentenceScoreId.toString();
+        const grade = (wasCorrect ? 5 : 0) as GradeType;
+
         const token = await getAccessTokenSilently();
         await Promise.all([
-          updateWordScore(token, wordId, wasCorrect ? 5 : 0),
-          updateSentenceScore(
-            token,
-            sentences[idx].sentence.sentenceScoreId.toString(),
-            wasCorrect ? 5 : 0,
-          ),
+          updateWordScore(token, wordId, grade),
+          updateSentenceScore(token, sentenceScoreId, grade),
         ]);
+        dispatch(updatedWordScore({ id: wordId, grade }));
       }}
       onFinish={() => navigate('/lists')}
     />
