@@ -72,17 +72,14 @@ export default function Questions({
         ? goToNextQuestion
         : onFinish;
 
-  const statusColor = useMemo(
-    () =>
-      userEnteredSolutionStatus === 'fully_correct'
-        ? theme.palette.success.main
-        : // A `partially_correct` solution should be considered wrong if user
-          // submits it for checking
-          userEnteredSolutionStatus === 'incorrect' || isSolutionChecked
-          ? theme.palette.error.main
-          : undefined,
-    [userEnteredSolutionStatus, theme, isSolutionChecked],
-  );
+  const statusColor =
+    userEnteredSolutionStatus === 'fully_correct'
+      ? theme.palette.success.main
+      : // A `partially_correct` solution should be considered wrong if user
+        // submits it for checking
+        userEnteredSolutionStatus === 'incorrect' || isSolutionChecked
+        ? theme.palette.error.main
+        : undefined;
 
   useEffect(() => {
     reset();
