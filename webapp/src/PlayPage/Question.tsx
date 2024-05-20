@@ -6,8 +6,11 @@ import {
 import { CorrectedWordScoreType, SentenceData } from './Play';
 import FillInTheBlanks from '../components/FillInTheBlanks';
 import Word from './Word';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DateTime } from 'luxon';
+import sample from 'lodash/sample';
+import Chance from 'chance';
+const chance = new Chance();
 
 export default function Question({
   question,
@@ -17,20 +20,29 @@ export default function Question({
   shouldFinish = false,
 }: QuestionProps) {
   const theme = useTheme();
-  const lm = getLanguageModel(question.sentence.textLanguageCode!);
+  const lm = useMemo(
+    () => getLanguageModel(question.sentence.textLanguageCode!),
+    [question.sentence.textLanguageCode],
+  );
 
-  const {
-    wordComponentsBefore,
-    wordComponentsAfter,
-    maskedWordComponent,
-    maskedWord,
-    maskedWordId,
-  } = getFillInTheBlanksQuestion(question, lm);
+  const { textBefore, maskedText, textAfter, maskedWordId } =
+    useFillInTheBlanksQuestion(question, lm);
+
+  const { wordComponentsBefore, wordComponentsUnderMask, wordComponentsAfter } =
+    getWordComponentsForFillInTheBlanks(
+      {
+        textBefore,
+        maskedText,
+        textAfter,
+      },
+      question.words,
+      lm,
+    );
 
   const [isSolutionChecked, setIsSolutionChecked] = useState(false);
   const checkUserEnteredSolution = () => {
     setIsSolutionChecked(true);
-    const isCorrect = lm.areEqual(maskedWord, userEnteredSolution);
+    const isCorrect = lm.areEqual(maskedText, userEnteredSolution);
     afterCheck(isCorrect, maskedWordId);
   };
 
@@ -40,8 +52,8 @@ export default function Question({
     userEnteredSolutionStatus,
     reset,
   } = useSolution(
-    (solution) => lm.startsWith(maskedWord, solution),
-    (solution) => lm.areEqual(maskedWord, solution),
+    (solution) => lm.startsWith(maskedText, solution),
+    (solution) => lm.areEqual(maskedText, solution),
   );
 
   const currAction: 'Check' | 'Finish' | 'Next' = !isSolutionChecked
@@ -81,9 +93,9 @@ export default function Question({
         componentsAfterBlank={wordComponentsAfter}
         hint={question.translations[0].text!}
         solved={isSolutionChecked}
-        solution={[maskedWordComponent]}
+        solution={wordComponentsUnderMask}
         BlankInputProps={{
-          value: isSolutionChecked ? maskedWord : userEnteredSolution,
+          value: isSolutionChecked ? maskedText : userEnteredSolution,
           onChange: (e) =>
             !isSolutionChecked
               ? setUserEnteredSolution(e.target.value)
@@ -100,7 +112,7 @@ export default function Question({
             },
           },
           style: {
-            width: `${maskedWord.length + 2.5}ch`,
+            width: `${maskedText.length + 2.5}ch`,
           },
         }}
       />
@@ -155,52 +167,6 @@ function useSolution(
   };
 }
 
-function getFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
-  const questionText = question.sentence.text!;
-
-  const { wordToMask, intervalToMask } = chooseMaskedWordWeighted(
-    questionText,
-    question.words,
-    lm,
-  );
-  const maskedWordComponent = (
-    <Word
-      wordScore={wordToMask}
-      wordText={questionText.slice(intervalToMask[0], intervalToMask[1])}
-    />
-  );
-
-  const textBefore = questionText.slice(0, intervalToMask[0]);
-  const wordScoresBefore = lm
-    .getWords(textBefore)
-    .map(
-      (word) =>
-        question.words.find((wordScore) => wordScore.word!.wordText === word)!,
-    );
-  const wordComponentsBefore = getWordComponents(
-    textBefore,
-    wordScoresBefore,
-    lm,
-  );
-
-  const textAfter = questionText.slice(intervalToMask[1]);
-  const wordScoresAfter = lm
-    .getWords(textAfter)
-    .map(
-      (word) =>
-        question.words.find((wordScore) => wordScore.word!.wordText === word)!,
-    );
-  const wordComponentsAfter = getWordComponents(textAfter, wordScoresAfter, lm);
-
-  return {
-    wordComponentsBefore,
-    wordComponentsAfter,
-    maskedWordComponent,
-    maskedWord: wordToMask.word!.wordText!,
-    maskedWordId: wordToMask._id,
-  };
-}
-
 function chooseMaskedWordWeighted(
   text: string,
   wordScores: CorrectedWordScoreType[],
@@ -220,12 +186,9 @@ function chooseMaskedWordWeighted(
     return 1.0 / (level * wordScore.score.easinessFactor);
   });
 
-  // const wordToMask = chance.weighted(wordScores, weights);
-  const { maxIdx } = maxWithIdx(weights)!;
-  const wordToMask = wordScores[maxIdx];
+  const wordToMask = chance.weighted(wordScores, weights);
   const occurrences = lm.findWord(text, wordToMask.word!.wordText!);
-  // const occurrenceToMask = sample(occurrences)!;
-  const occurrenceToMask = occurrences[0];
+  const occurrenceToMask = sample(occurrences)!;
 
   return {
     wordToMask,
@@ -233,27 +196,7 @@ function chooseMaskedWordWeighted(
   };
 }
 
-function maxWithIdx(items: number[]) {
-  if (items.length === 0) {
-    return;
-  }
-
-  let max = items[0];
-  let maxIdx = 0;
-  for (let i = 1; i < items.length; ++i) {
-    if (max < items[i]) {
-      max = items[i];
-      maxIdx = i;
-    }
-  }
-
-  return {
-    max,
-    maxIdx,
-  };
-}
-
-function getWordComponents(
+function getWordComponentsFromWordScores(
   text: string,
   wordScores: CorrectedWordScoreType[],
   lm: LanguageModel,
@@ -293,4 +236,85 @@ function getWordComponents(
   }
 
   return components;
+}
+
+function useFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
+  // We always want to use the initial question that was supplied.
+  // Since the masked word is chosen based on the word scores, and
+  // interacting with the question changes word scores, we don't
+  // want to rechoose the masked word for the same question.
+  const [initialQuestion, setInitialQuestion] = useState(question);
+  useEffect(() => {
+    if (
+      initialQuestion.sentence.sentenceScoreId ===
+      question.sentence.sentenceScoreId
+    ) {
+      return;
+    }
+
+    setInitialQuestion(question);
+  }, [initialQuestion.sentence.sentenceScoreId, question]);
+
+  const questionText = initialQuestion.sentence.text!;
+
+  const { wordToMask, intervalToMask } = useMemo(
+    () => chooseMaskedWordWeighted(questionText, initialQuestion.words, lm),
+    [questionText, initialQuestion.words, lm],
+  );
+
+  const textBefore = questionText.slice(0, intervalToMask[0]);
+  const maskedText = questionText.slice(intervalToMask[0], intervalToMask[1]);
+  const textAfter = questionText.slice(intervalToMask[1]);
+
+  return {
+    textBefore,
+    maskedText,
+    textAfter,
+    maskedWordId: wordToMask._id,
+  };
+}
+
+function getWordComponentsFromText(
+  text: string,
+  wordScores: CorrectedWordScoreType[],
+  lm: LanguageModel,
+) {
+  const matchedWordScores = lm
+    .getWords(text)
+    .map(
+      (wordText) =>
+        wordScores.find((wordScore) => wordScore.word!.wordText === wordText)!,
+    );
+
+  return getWordComponentsFromWordScores(text, matchedWordScores, lm);
+}
+
+function getWordComponentsForFillInTheBlanks(
+  texts: { textBefore: string; maskedText: string; textAfter: string },
+  wordScores: CorrectedWordScoreType[],
+  lm: LanguageModel,
+) {
+  const wordComponentsBefore = getWordComponentsFromText(
+    texts.textBefore,
+    wordScores,
+    lm,
+  );
+
+  const wordComponentsUnderMask = getWordComponentsFromText(
+    texts.maskedText,
+    wordScores,
+    lm,
+  );
+
+  const wordComponentsAfter = getWordComponentsFromText(
+    texts.textAfter,
+    wordScores,
+    lm,
+  );
+
+  return {
+    wordComponentsBefore,
+    wordComponentsUnderMask,
+    wordComponentsAfter,
+  };
 }
