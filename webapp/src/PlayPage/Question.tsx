@@ -29,14 +29,18 @@ export default function Question({
     useFillInTheBlanksQuestion(question, lm);
 
   const { wordComponentsBefore, wordComponentsUnderMask, wordComponentsAfter } =
-    getWordComponentsForFillInTheBlanks(
-      {
-        textBefore,
-        maskedText,
-        textAfter,
-      },
-      question.words,
-      lm,
+    useMemo(
+      () =>
+        getWordComponentsForFillInTheBlanks(
+          {
+            textBefore,
+            maskedText,
+            textAfter,
+          },
+          question.words,
+          lm,
+        ),
+      [textBefore, maskedText, textAfter, question.words, lm],
     );
 
   const [isSolutionChecked, setIsSolutionChecked] = useState(false);
@@ -279,12 +283,17 @@ function getWordComponentsFromText(
   wordScores: CorrectedWordScoreType[],
   lm: LanguageModel,
 ) {
-  const matchedWordScores = lm
-    .getWords(text)
-    .map(
-      (wordText) =>
-        wordScores.find((wordScore) => wordScore.word!.wordText === wordText)!,
-    );
+  const wordTexts = lm.getWords(text);
+  const matchedWordScores = wordTexts.map(
+    (wordText) =>
+      wordScores.find((wordScore) => wordScore.word!.wordText === wordText)!,
+  );
+
+  if (matchedWordScores.some((ws) => ws === undefined)) {
+    // Mismatch between wordScores supplied and the text given. This happens
+    // when up-to-date data is not passed. Will be correct in the next render.
+    return [];
+  }
 
   return getWordComponentsFromWordScores(text, matchedWordScores, lm);
 }
