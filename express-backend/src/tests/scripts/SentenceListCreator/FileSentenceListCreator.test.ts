@@ -7,17 +7,16 @@ import {
   expect,
   it,
 } from '@jest/globals';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongoose, { Document, Types } from 'mongoose';
-import { UserProfile, UserProfileType } from '../../../user-profile';
+import { UserProfile } from '../../../user-profile';
 import FileSentenceListCreator from '../../../scripts/SentenceListCreator/FileSentenceListCreator';
 import Sentence from '../../../sentence';
 import SentenceList from '../../../sentence-list';
 import Word from '../../../word/word';
 
-describe('File Sentence List Creator', () => {
-  let mongoDB: MongoMemoryServer;
-  let alice: Document<Types.ObjectId, {}, UserProfileType> & UserProfileType;
+describe('File Sentence List Creator', async () => {
+  const alice = await UserProfile.create({
+    userId: 'google-oauth2|113671952727045600873',
+  });
 
   beforeAll(async () => {
     await Promise.all([
@@ -35,14 +34,6 @@ describe('File Sentence List Creator', () => {
       ),
       fs.writeFile('tr_malformed.txt', 'Ben de iyiyim.\nSen nasılsın?\n'),
     ]);
-
-    mongoDB = await MongoMemoryServer.create();
-    const uri = mongoDB.getUri();
-    await mongoose.connect(uri);
-
-    alice = await UserProfile.create({
-      userId: 'google-oauth2|113671952727045600873',
-    });
   });
 
   afterEach(async () => {
@@ -58,11 +49,10 @@ describe('File Sentence List Creator', () => {
       fs.unlink('tr.txt'),
       fs.unlink('tr_malformed.txt'),
     ]);
-    await mongoose.disconnect();
-    await mongoDB.stop();
   });
 
   it('should fetch from a default sentences.txt file if no files are provided', async () => {
+    await Sentence.deleteMany({});
     const sentenceCreator = new FileSentenceListCreator('Test list', alice);
     await sentenceCreator.execute();
 

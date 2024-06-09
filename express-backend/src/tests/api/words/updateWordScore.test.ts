@@ -1,47 +1,27 @@
 import {
-  afterAll,
   afterEach,
-  beforeAll,
   beforeEach,
   describe,
   expect,
   it,
   jest,
 } from '@jest/globals';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongoose, { Document, Types } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 import { createRequest, createResponse } from 'node-mocks-http';
-import { UserProfile, UserProfileType } from '../../../user-profile';
+import { UserProfile } from '../../../user-profile';
 import { updateScore } from '../../../api/words';
-import Word, { WordType } from '../../../word/word';
+import Word from '../../../word/word';
 import WordScore, { WordScoreType } from '../../../word/wordScore';
 
-describe('Update sentence score', () => {
-  let mongoDB: MongoMemoryServer;
-
-  let alice: UserProfileType;
-  let sampleWord: WordType;
-  let sampleWordScore: Document<Types.ObjectId, {}, WordScoreType> &
-    WordScoreType;
-
-  beforeAll(async () => {
-    mongoDB = await MongoMemoryServer.create();
-    const uri = mongoDB.getUri();
-    await mongoose.connect(uri);
-
-    alice = await UserProfile.create({
-      userId: 'abc',
-    });
-    sampleWord = await Word.create({
-      wordText: 'Hello',
-      languageCode: 'en',
-    });
+describe('Update sentence score', async () => {
+  const alice = await UserProfile.create({
+    userId: 'abc',
   });
-
-  afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoDB.stop();
+  const sampleWord = await Word.create({
+    wordText: 'Hello',
+    languageCode: 'en',
   });
+  let sampleWordScore: HydratedDocument<WordScoreType>;
 
   beforeEach(async () => {
     sampleWordScore = await WordScore.create({
@@ -103,7 +83,12 @@ describe('Update sentence score', () => {
   it("should give an error if word score doesn't exist", async () => {
     const req = createRequest({
       params: {
-        id: sampleWordScore._id.toString().replace('a', 'b'),
+        id: sampleWordScore._id
+          .toString()
+          .replace('a', 'b')
+          .replace('c', 'd')
+          .replace('e', 'f')
+          .replace('0', '1'),
       },
       query: {
         grade: 3,

@@ -1,17 +1,7 @@
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  describe,
-  expect,
-  it,
-} from '@jest/globals';
+import { afterEach, beforeAll, describe, expect, it } from '@jest/globals';
 import { jest } from '@jest/globals';
 
 import { RequestOptions, createRequest, createResponse } from 'node-mocks-http';
-
-import mongoose from 'mongoose';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 
 import SentenceList from '../../../sentence-list';
 import createUserProfile from '../../../middlewares/createUserProfile';
@@ -19,8 +9,6 @@ import { getSentenceLists } from '../../../api/sentenceLists';
 import { UserProfile } from '../../../user-profile';
 
 describe('GET sentence list', () => {
-  let mongoDB: MongoMemoryServer;
-
   const aliceReqOpts = {
     method: 'GET',
     url: '/api',
@@ -52,10 +40,6 @@ describe('GET sentence list', () => {
   } as RequestOptions;
 
   beforeAll(async () => {
-    mongoDB = await MongoMemoryServer.create();
-    const uri = mongoDB.getUri();
-    await mongoose.connect(uri);
-
     const aliceReq = createRequest(aliceReqOpts);
     const aliceRes = createResponse();
     const aliceNext = jest.fn();
@@ -67,16 +51,12 @@ describe('GET sentence list', () => {
     await createUserProfile(bobReq, bobRes, bobNext);
   });
 
-  afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoDB.stop();
-  });
-
   afterEach(async () => {
     await SentenceList.deleteMany();
   });
 
   it('should return empty array if there are not lists', async () => {
+    await SentenceList.deleteMany({});
     const req = createRequest(aliceReqOpts);
     const res = createResponse();
 

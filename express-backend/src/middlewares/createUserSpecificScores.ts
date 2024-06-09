@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-import { createScoresChannel } from '../tasks';
-import { CREATE_SCORES_QUEUE } from '../tasks/queues';
+import { CREATE_SCORES_QUEUE, createScoresChannel } from '../tasks/queues';
 
 import { UserProfile } from '../user-profile';
 import { createSomeScoresForUser } from './helpers';

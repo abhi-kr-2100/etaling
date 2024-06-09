@@ -1,23 +1,14 @@
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  describe,
-  expect,
-  it,
-} from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import SentenceListCreator from '../../../scripts/SentenceListCreator';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongoose, { Document, Types } from 'mongoose';
-import { UserProfile, UserProfileType } from '../../../user-profile';
+import { UserProfile } from '../../../user-profile';
 import SentenceList from '../../../sentence-list';
 import Sentence from '../../../sentence';
 import Word from '../../../word/word';
 
-describe('SentenceListCreator', () => {
-  let mongoDB: MongoMemoryServer;
-
-  let alice: Document<Types.ObjectId, {}, UserProfileType> & UserProfileType;
+describe('SentenceListCreator', async () => {
+  let alice = await UserProfile.create({
+    userId: 'google-oauth2|113671952727045600873',
+  });
 
   const sentence1 = {
     text: 'Hello, world!',
@@ -36,25 +27,10 @@ describe('SentenceListCreator', () => {
     textLanguageCode: 'en',
   };
 
-  beforeAll(async () => {
-    mongoDB = await MongoMemoryServer.create();
-    const uri = mongoDB.getUri();
-    await mongoose.connect(uri);
-
-    alice = await UserProfile.create({
-      userId: 'google-oauth2|113671952727045600873',
-    });
-  });
-
-  afterEach(async () => {
+  beforeEach(async () => {
     await SentenceList.deleteMany({});
     await Sentence.deleteMany({});
     await Word.deleteMany({});
-  });
-
-  afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoDB.stop();
   });
 
   it('should create the sentence list', async () => {

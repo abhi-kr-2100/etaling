@@ -1,20 +1,14 @@
-import 'dotenv/config';
-import '../../db/mongo';
-import { redisCluster } from '../../db/redis';
-
-import ampqlib, { ConsumeMessage } from 'amqplib';
-import { CREATE_SCORES_QUEUE } from '../queues';
+import { Channel, ConsumeMessage } from 'amqplib';
+import Client from 'ioredis';
 import { createSomeScoresForUser } from '../../middlewares/helpers';
 import { UserProfile, UserProfileType } from '../../user-profile';
-import { Document, Types } from 'mongoose';
+import { Types } from 'mongoose';
 
-const rabbitMQConnection = await ampqlib.connect(process.env.RABBITMQ_URL);
-
-const createScoresChannel = await rabbitMQConnection.createChannel();
-await createScoresChannel.assertQueue(CREATE_SCORES_QUEUE);
-createScoresChannel.consume(CREATE_SCORES_QUEUE, createScores);
-
-export async function createScores(message: ConsumeMessage) {
+export async function createScores(
+  message: ConsumeMessage,
+  channel: Channel,
+  redisCluster: Client,
+) {
   const { user, sentenceListId } = JSON.parse(message.content.toString()) as {
     user: UserProfileType & {
       _id: Types.ObjectId;
@@ -35,7 +29,7 @@ export async function createScores(message: ConsumeMessage) {
     const savedUser = await UserProfile.findById(user._id);
     savedUser.configuredSentenceLists.push(new Types.ObjectId(sentenceListId));
     await savedUser.save();
-    createScoresChannel.ack(message);
+    channel.ack(message);
   } finally {
     await redisCluster.del(lockName);
   }

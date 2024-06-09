@@ -1,68 +1,46 @@
 import {
-  afterAll,
   afterEach,
-  beforeAll,
   beforeEach,
   describe,
   expect,
   it,
   jest,
 } from '@jest/globals';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongoose, { Document, Types } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 import { createRequest, createResponse } from 'node-mocks-http';
-import Sentence, { SentenceType } from '../../../sentence';
+import Sentence from '../../../sentence';
 import SentenceScore, {
   SentenceScoreType,
 } from '../../../sentence/sentenceScore';
-import { UserProfile, UserProfileType } from '../../../user-profile';
+import { UserProfile } from '../../../user-profile';
 import { updateScore } from '../../../api/sentences';
-import WordScore, { WordScoreType } from '../../../word/wordScore';
+import WordScore from '../../../word/wordScore';
 import Word from '../../../word/word';
 
-describe('Update sentence score', () => {
-  let mongoDB: MongoMemoryServer;
-
-  let alice: UserProfileType;
-  let sampleSentence: SentenceType;
-  let sampleSentenceScore: Document<Types.ObjectId, {}, SentenceScoreType> &
-    SentenceScoreType;
-  let sampleWordScore: WordScoreType;
-
-  beforeAll(async () => {
-    mongoDB = await MongoMemoryServer.create();
-    const uri = mongoDB.getUri();
-    await mongoose.connect(uri);
-
-    alice = await UserProfile.create({
-      userId: 'abc',
-    });
-    sampleSentence = await Sentence.create({
-      text: 'Dummy!',
-      textLanguageCode: 'en',
-    });
-
-    const sampleWord = await Word.create({
-      wordText: 'dummy',
-      languageCode: 'en',
-    });
-
-    sampleWordScore = await WordScore.create({
-      word: sampleWord,
-      owner: alice,
-      score: {
-        repetitionNumber: 0,
-        easinessFactor: 1.5,
-        interRepetitionIntervalInDays: 1,
-        lastReviewDate: new Date(),
-      },
-    });
+describe('Update sentence score', async () => {
+  const alice = await UserProfile.create({
+    userId: 'abc',
+  });
+  const sampleSentence = await Sentence.create({
+    text: 'Dummy!',
+    textLanguageCode: 'en',
+  });
+  const sampleWord = await Word.create({
+    wordText: 'dummy',
+    languageCode: 'en',
+  });
+  const sampleWordScore = await WordScore.create({
+    word: sampleWord,
+    owner: alice,
+    score: {
+      repetitionNumber: 0,
+      easinessFactor: 1.5,
+      interRepetitionIntervalInDays: 1,
+      lastReviewDate: new Date(),
+    },
   });
 
-  afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoDB.stop();
-  });
+  let sampleSentenceScore: HydratedDocument<SentenceScoreType>;
 
   beforeEach(async () => {
     sampleSentenceScore = await SentenceScore.create({

@@ -14,8 +14,8 @@ import mongoose, { Document, Types } from 'mongoose';
 import TatoebaSentenceListCreator from '../../../scripts/SentenceListCreator/TatoebaSentenceListCreator';
 import { UserProfile, UserProfileType } from '../../../user-profile';
 
-describe('Tatoeba Sentence List Creator', () => {
-  let mock: MockAdapter;
+describe('Tatoeba Sentence List Creator', async () => {
+  const mock = new MockAdapter(axios);
 
   const page1URL = `https://api.dev.tatoeba.org/unstable/sentences?lang=eng&page=1`;
   const page1URLLimited = `https://api.dev.tatoeba.org/unstable/sentences?lang=eng&page=1&trans=spa`;
@@ -22947,19 +22947,8 @@ describe('Tatoeba Sentence List Creator', () => {
     },
   };
 
-  let mongoDB: MongoMemoryServer;
-  let alice: Document<Types.ObjectId, {}, UserProfileType> & UserProfileType;
-
-  beforeAll(async () => {
-    mock = new MockAdapter(axios);
-
-    mongoDB = await MongoMemoryServer.create();
-    const uri = mongoDB.getUri();
-    await mongoose.connect(uri);
-
-    alice = await UserProfile.create({
-      userId: 'google-oauth2|113671952727045600873',
-    });
+  const alice = await UserProfile.create({
+    userId: 'google-oauth2|113671952727045600873',
   });
 
   beforeEach(() => {
@@ -22971,11 +22960,6 @@ describe('Tatoeba Sentence List Creator', () => {
 
   afterEach(() => {
     mock.reset();
-  });
-
-  afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoDB.stop();
   });
 
   it('should fetch sentences from Tatoeba', async () => {

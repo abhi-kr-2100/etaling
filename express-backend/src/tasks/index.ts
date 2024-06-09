@@ -1,9 +1,10 @@
-import ampqlib from 'amqplib';
-import { CREATE_SCORES_QUEUE } from './queues';
+import 'dotenv/config';
+import '../db/mongo';
+import { redisCluster } from '../db/redis';
+import { ConsumeMessage } from 'amqplib';
+import { CREATE_SCORES_QUEUE, createScoresChannel } from './queues';
+import { createScores } from './consumers/createScores';
 
-export const rabbitMQConnection = await ampqlib.connect(
-  process.env.RABBITMQ_URL,
+createScoresChannel.consume(CREATE_SCORES_QUEUE, (msg: ConsumeMessage) =>
+  createScores(msg, createScoresChannel, redisCluster),
 );
-
-export const createScoresChannel = await rabbitMQConnection.createChannel();
-await createScoresChannel.assertQueue(CREATE_SCORES_QUEUE);

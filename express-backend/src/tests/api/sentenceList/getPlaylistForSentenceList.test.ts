@@ -1,193 +1,59 @@
-import {
-  describe,
-  it,
-  expect,
-  beforeAll,
-  afterAll,
-  afterEach,
-  beforeEach,
-} from '@jest/globals';
-
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongoose, { Document, Types } from 'mongoose';
+import { describe, it, expect, afterEach, beforeEach } from '@jest/globals';
 
 import { createRequest, createResponse } from 'node-mocks-http';
 
-import { SentenceType } from '../../../sentence';
-import { WordScoreType } from '../../../word/wordScore';
-import { WordType } from '../../../word/word';
-import { SentenceListType } from '../../../sentence-list';
-
-import { UserProfile, UserProfileType } from '../../../user-profile';
+import { UserProfile } from '../../../user-profile';
 import Sentence from '../../../sentence';
 import SentenceList from '../../../sentence-list';
 import Word from '../../../word/word';
 import WordScore from '../../../word/wordScore';
 
 import { getPlaylistForSentenceList } from '../../../api/sentenceLists';
-import SentenceScore, {
-  SentenceScoreType,
-} from '../../../sentence/sentenceScore';
+import SentenceScore from '../../../sentence/sentenceScore';
 
-describe('GET playlist for a sentence list', () => {
-  let mongoDB: MongoMemoryServer;
+describe('GET playlist for a sentence list', async () => {
+  const alice = await UserProfile.create({
+    userId: 'google-oauth2|113671952727045600873',
+  });
 
-  let alice: Document<unknown, {}, UserProfileType> & UserProfileType;
+  const testSentenceList = await SentenceList.create({
+    title: "Alice's Test List",
+    owner: alice,
+  });
 
-  let sentence1: Document<unknown, {}, SentenceType> &
-      SentenceType & {
-        _id: Types.ObjectId;
-      },
-    sentence2: Document<unknown, {}, SentenceType> &
-      SentenceType & {
-        _id: Types.ObjectId;
-      };
-
-  let translation1: Document<unknown, {}, SentenceType> &
-      SentenceType & {
-        _id: Types.ObjectId;
-      },
-    translation2: Document<unknown, {}, SentenceType> &
-      SentenceType & {
-        _id: Types.ObjectId;
-      },
-    translation1_1: Document<unknown, {}, SentenceType> &
-      SentenceType & {
-        _id: Types.ObjectId;
-      };
-
-  let sentenceScore1: Document<unknown, {}, SentenceScoreType> &
-    SentenceScoreType;
-  let sentenceScore2: Document<unknown, {}, SentenceScoreType> &
-    SentenceScoreType;
-
-  let words = [] as (Document<unknown, {}, WordType> & WordType)[];
-  let wordScores = [] as (Document<unknown, {}, WordScoreType> &
-    WordScoreType)[];
-
-  let testSentenceList: Document<unknown, {}, SentenceListType> &
-    SentenceListType;
-
-  let reqTemplate;
-
-  beforeAll(async () => {
-    mongoDB = await MongoMemoryServer.create();
-    const uri = mongoDB.getUri();
-    await mongoose.connect(uri);
-
-    alice = await UserProfile.create({
-      userId: 'google-oauth2|113671952727045600873',
-    });
-
-    testSentenceList = await SentenceList.create({
-      title: "Alice's Test List",
-      owner: alice,
-    });
-
-    reqTemplate = {
-      url: `/${testSentenceList._id}`,
-      params: {
-        id: testSentenceList._id,
-      },
-      auth: {
-        payload: {
-          iss: 'https://dev-zn47gq4ofr7kn50q.us.auth0.com/',
-          sub: 'google-oauth2|113671952727045600873',
-          iat: 1709835540,
-          exp: 1709921940,
-          azp: 'Hr3TuSKc8h2rkY0sxGAfXTbAQkEODFa5',
-          scope: 'openid profile email',
-        },
-      },
-    };
-
-    sentence1 = await Sentence.create({
-      text: 'Hello, world!',
-      textLanguageCode: 'en',
-      sentenceList: testSentenceList,
-    });
-
-    translation1 = await Sentence.create({
-      text: 'Merhaba, dünya!',
-      textLanguageCode: 'tr',
-    });
-
-    translation1_1 = await Sentence.create({
-      text: 'Hallo, welt!',
-      textLanguageCode: 'de',
-    });
-
-    sentence1.translations.push(translation1._id);
-    sentence1.translations.push(translation1_1._id);
-    await sentence1.save();
-
-    words.push(
-      await Word.create({
-        wordText: 'hello',
-        languageCode: 'en',
+  const [sentence1, sentence2, translation1, translation2, translation1_1] =
+    await Promise.all([
+      Sentence.create({
+        text: 'Hello, world!',
+        textLanguageCode: 'en',
+        sentenceList: testSentenceList,
       }),
-    );
-    wordScores.push(
-      await WordScore.create({
-        word: words[0],
-        owner: alice,
+      Sentence.create({
+        text: 'Goodbye, universe!',
+        textLanguageCode: 'en',
+        sentenceList: testSentenceList,
       }),
-    );
-
-    words.push(
-      await Word.create({
-        wordText: 'world',
-        languageCode: 'en',
+      Sentence.create({
+        text: 'Merhaba, dünya!',
+        textLanguageCode: 'tr',
       }),
-    );
-    wordScores.push(
-      await WordScore.create({
-        word: words[1],
-        owner: alice,
+      Sentence.create({
+        text: 'Hoşça kal, evren!',
+        textLanguageCode: 'tr',
       }),
-    );
-
-    sentence2 = await Sentence.create({
-      text: 'Goodbye, universe!',
-      textLanguageCode: 'en',
-      sentenceList: testSentenceList,
-    });
-
-    translation2 = await Sentence.create({
-      text: 'Hoşça kal, evren!',
-      textLanguageCode: 'tr',
-    });
-
-    sentence2.translations.push(translation2._id);
-    await sentence2.save();
-
-    words.push(
-      await Word.create({
-        wordText: 'goodbye',
-        languageCode: 'en',
+      Sentence.create({
+        text: 'Hallo, welt!',
+        textLanguageCode: 'de',
       }),
-    );
-    wordScores.push(
-      await WordScore.create({
-        word: words[2],
-        owner: alice,
-      }),
-    );
+    ]);
 
-    words.push(
-      await Word.create({
-        wordText: 'universe',
-        languageCode: 'en',
-      }),
-    );
-    wordScores.push(
-      await WordScore.create({
-        word: words[3],
-        owner: alice,
-      }),
-    );
+  sentence1.translations.push(translation1._id);
+  sentence1.translations.push(translation1_1._id);
+  sentence2.translations.push(translation2._id);
+  await Promise.all([sentence2.save(), sentence1.save()]);
 
-    sentenceScore1 = await SentenceScore.create({
+  const [sentenceScore1, sentenceScore2] = await Promise.all([
+    SentenceScore.create({
       sentence: sentence1,
       owner: alice,
       score: {
@@ -196,18 +62,57 @@ describe('GET playlist for a sentence list', () => {
         interRepetitionIntervalInDays: 6,
         lastReviewDate: new Date(),
       },
-    });
-
-    sentenceScore2 = await SentenceScore.create({
+    }),
+    SentenceScore.create({
       sentence: sentence2,
       owner: alice,
-    });
-  });
+    }),
+  ]);
 
-  afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoDB.stop();
-  });
+  const words = await Promise.all([
+    Word.create({
+      wordText: 'hello',
+      languageCode: 'en',
+    }),
+    Word.create({
+      wordText: 'world',
+      languageCode: 'en',
+    }),
+    Word.create({
+      wordText: 'goodbye',
+      languageCode: 'en',
+    }),
+    Word.create({
+      wordText: 'universe',
+      languageCode: 'en',
+    }),
+  ]);
+
+  const wordScores = await Promise.all(
+    words.map((word) =>
+      WordScore.create({
+        word,
+        owner: alice,
+      }),
+    ),
+  );
+
+  const reqTemplate = {
+    url: `/${testSentenceList._id}`,
+    params: {
+      id: testSentenceList._id,
+    },
+    auth: {
+      payload: {
+        iss: 'https://dev-zn47gq4ofr7kn50q.us.auth0.com/',
+        sub: 'google-oauth2|113671952727045600873',
+        iat: 1709835540,
+        exp: 1709921940,
+        azp: 'Hr3TuSKc8h2rkY0sxGAfXTbAQkEODFa5',
+        scope: 'openid profile email',
+      },
+    },
+  };
 
   beforeEach(async () => {
     sentence1.sentenceList = testSentenceList;

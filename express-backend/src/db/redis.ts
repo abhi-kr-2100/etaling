@@ -1,5 +1,3 @@
-import 'dotenv/config';
-
 import Client from 'ioredis';
 
 export const redisCluster = new Client({

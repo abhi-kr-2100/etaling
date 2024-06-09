@@ -1,43 +1,15 @@
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  describe,
-  expect,
-  it,
-} from '@jest/globals';
+import { describe, expect, it } from '@jest/globals';
 
 import { createRequest, createResponse } from 'node-mocks-http';
 
-import mongoose, { HydratedDocument } from 'mongoose';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-
 import SentenceList from '../../../sentence-list';
-import { UserProfile, UserProfileType } from '../../../user-profile';
-import { getCourses } from '../../../api/courses';
 import Course from '../../../course';
+import { UserProfile } from '../../../user-profile';
+import { getCourses } from '../../../api/courses';
 
-describe('GET courses', () => {
-  let mongoDB: MongoMemoryServer;
-  let alice: HydratedDocument<UserProfileType>;
-
-  beforeAll(async () => {
-    mongoDB = await MongoMemoryServer.create();
-    const uri = mongoDB.getUri();
-    await mongoose.connect(uri);
-
-    alice = await UserProfile.create({
-      userId: 'abc',
-    });
-  });
-
-  afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoDB.stop();
-  });
-
-  afterEach(async () => {
-    await Promise.all([SentenceList.deleteMany(), Course.deleteMany()]);
+describe('GET courses', async () => {
+  const alice = await UserProfile.create({
+    userId: 'abc',
   });
 
   it('should return empty array if there are not courses', async () => {

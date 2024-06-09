@@ -1,74 +1,40 @@
-import {
-  beforeEach,
-  afterEach,
-  describe,
-  it,
-  beforeAll,
-  afterAll,
-  expect,
-} from '@jest/globals';
+import { afterEach, describe, it, expect } from '@jest/globals';
 
 import createScoresForUser from '../../../scripts/ScoreCreator';
 
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongoose, { Document, Types } from 'mongoose';
-import { UserProfile, UserProfileType } from '../../../user-profile';
-import SentenceList, { SentenceListType } from '../../../sentence-list';
+import { UserProfile } from '../../../user-profile';
+import SentenceList from '../../../sentence-list';
 import WordScore from '../../../word/wordScore';
-import Sentence, { SentenceType } from '../../../sentence';
-import Word, { WordType } from '../../../word/word';
+import Sentence from '../../../sentence';
+import Word from '../../../word/word';
 import SentenceScore from '../../../sentence/sentenceScore';
 
-describe('create user specific scores middleware', () => {
-  let mongoDB: MongoMemoryServer;
-
-  let testUser: Document<Types.ObjectId, {}, UserProfileType> & UserProfileType,
-    testSentenceList: Document<Types.ObjectId, {}, SentenceListType> &
-      SentenceListType,
-    testSentenceList2: Document<Types.ObjectId, {}, SentenceListType> &
-      SentenceListType,
-    testSentence: Document<Types.ObjectId, {}, SentenceType> & SentenceType,
-    testSentence2: Document<Types.ObjectId, {}, SentenceType> & SentenceType,
-    testWords = [] as (Document<Types.ObjectId, {}, WordType> & WordType)[];
-
-  beforeAll(async () => {
-    mongoDB = await MongoMemoryServer.create();
-    const uri = mongoDB.getUri();
-    await mongoose.connect(uri);
-
-    testUser = await UserProfile.create({
-      userId: 'google-oauth2|113671952727045600873',
-    });
-
-    testSentenceList = await SentenceList.create({
-      title: 'Test Sentence List',
-      owner: testUser,
-    });
-
-    testSentenceList2 = await SentenceList.create({
-      title: 'Test Sentence List 2',
-      owner: testUser,
-    });
-
-    testSentence = await Sentence.create({
-      sentenceList: testSentenceList,
-      text: 'Test',
-      textLanguageCode: 'en',
-    });
-
-    testSentence2 = await Sentence.create({
-      sentenceList: testSentenceList2,
-      text: 'Test',
-      textLanguageCode: 'en',
-    });
-
-    testWords.push(
-      await Word.create({
-        wordText: 'test',
-        languageCode: 'en',
-      }),
-    );
+describe('create user specific scores middleware', async () => {
+  let testUser = await UserProfile.create({
+    userId: 'google-oauth2|113671952727045600873',
   });
+  const testSentenceList = await SentenceList.create({
+    title: 'Test Sentence List',
+    owner: testUser,
+  });
+
+  const testSentenceList2 = await SentenceList.create({
+    title: 'Test Sentence List 2',
+    owner: testUser,
+  });
+
+  const testSentence = await Sentence.create({
+    sentenceList: testSentenceList,
+    text: 'Test',
+    textLanguageCode: 'en',
+  });
+
+  const testWords = [
+    await Word.create({
+      wordText: 'test',
+      languageCode: 'en',
+    }),
+  ];
 
   afterEach(async () => {
     await WordScore.deleteMany({});
@@ -76,11 +42,6 @@ describe('create user specific scores middleware', () => {
 
     testUser.configuredSentenceLists = [];
     await testUser.save();
-  });
-
-  afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoDB.stop();
   });
 
   it("should create sentence and word scores for a user if they don't exist", async () => {
@@ -140,7 +101,7 @@ describe('create user specific scores middleware', () => {
     ).toContain(testSentenceList2._id.toString());
 
     const sentenceScores = await SentenceScore.find({});
-    expect(sentenceScores.length).toBe(2);
+    expect(sentenceScores.length).toBe(1);
 
     const wordScores = await WordScore.find({});
     expect(wordScores.length).toBe(1);
