@@ -27,6 +27,12 @@ export async function createScores(
   try {
     await createSomeScoresForUser(user, sentenceListId);
     const savedUser = await UserProfile.findById(user._id);
+    if (savedUser === null) {
+      console.error(
+        `Given user was not found in the database! ID was ${user._id}.`,
+      );
+      process.exit(1);
+    }
     savedUser.configuredSentenceLists.push(new Types.ObjectId(sentenceListId));
     await savedUser.save();
     channel.ack(message);
