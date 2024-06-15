@@ -3,7 +3,7 @@ import {
   LanguageModel,
   getLanguageModel,
 } from '../../../express-backend/src/language-models';
-import { CorrectedWordScoreType, SentenceData } from './Play';
+import { SerializedWordScoreType, SentenceData } from './Play';
 import FillInTheBlanks from '../components/FillInTheBlanks';
 import Word from './Word';
 import { useEffect, useMemo, useState } from 'react';
@@ -173,7 +173,7 @@ function useSolution(
 
 function chooseMaskedWordWeighted(
   text: string,
-  wordScores: CorrectedWordScoreType[],
+  wordScores: SerializedWordScoreType[],
   lm: LanguageModel,
 ) {
   const weights = wordScores.map((wordScore) => {
@@ -202,7 +202,7 @@ function chooseMaskedWordWeighted(
 
 function getWordComponentsFromWordScores(
   text: string,
-  wordScores: CorrectedWordScoreType[],
+  wordScores: SerializedWordScoreType[],
   lm: LanguageModel,
 ) {
   const wordToIntervalIdx = new Map<string, number>();
@@ -280,7 +280,7 @@ function useFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
 
 function getWordComponentsFromText(
   text: string,
-  wordScores: CorrectedWordScoreType[],
+  wordScores: SerializedWordScoreType[],
   lm: LanguageModel,
 ) {
   const wordTexts = lm.getWords(text);
@@ -300,7 +300,7 @@ function getWordComponentsFromText(
 
 function getWordComponentsForFillInTheBlanks(
   texts: { textBefore: string; maskedText: string; textAfter: string },
-  wordScores: CorrectedWordScoreType[],
+  wordScores: SerializedWordScoreType[],
   lm: LanguageModel,
 ) {
   const wordComponentsBefore = getWordComponentsFromText(

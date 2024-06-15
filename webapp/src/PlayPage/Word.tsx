@@ -14,7 +14,7 @@ import {
   Slider,
   Typography,
 } from '@mui/material';
-import { CorrectedWordScoreType } from './Play';
+import { SerializedWordScoreType } from './Play';
 import { useTranslation } from 'react-i18next';
 import { useAuth0 } from '@auth0/auth0-react';
 import { updateWordEasinessFactor } from '../queries';
@@ -142,7 +142,7 @@ function WordPopover({
   );
 }
 
-function useWordColor(wordScore: CorrectedWordScoreType) {
+function useWordColor(wordScore: SerializedWordScoreType) {
   const [ef, setEF] = useState(wordScore.score.easinessFactor);
   useEffect(
     () => setEF(wordScore.score.easinessFactor),
@@ -191,12 +191,12 @@ function useSyncedState<T>(
 }
 
 interface WordPopoverProps {
-  wordScore: CorrectedWordScoreType;
+  wordScore: SerializedWordScoreType;
   setEF: (ef: number) => void;
   PopoverProps: PopoverProps;
 }
 
 export interface WordProps {
   wordText: string;
-  wordScore: CorrectedWordScoreType;
+  wordScore: SerializedWordScoreType;
 }

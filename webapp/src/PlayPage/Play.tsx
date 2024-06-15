@@ -56,12 +56,15 @@ export interface PlayProps {
 export interface SentenceData {
   sentence: SentenceType & { sentenceScoreId: Types.ObjectId };
   translations: SentenceType[];
-  words: CorrectedWordScoreType[];
+  words: SerializedWordScoreType[];
 }
 
-// According to Mongoose lastReviewDate is of type Date, but it's actually a
-// string
-export type CorrectedWordScoreType = Omit<WordScoreType, 'score'> & {
+// JSON doesn't support the Date type. The backend returns it as a string.
+export type SerializedScoreType = Omit<ScoreType, 'lastReviewDate'> & {
+  lastReviewDate: string; // date in ISO format
+};
+
+export type SerializedWordScoreType = Omit<WordScoreType, 'score'> & {
   _id: string;
-  score: Omit<ScoreType, 'lastReviewDate'> & { lastReviewDate: string };
+  score: SerializedScoreType;
 };
