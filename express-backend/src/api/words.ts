@@ -28,7 +28,10 @@ export async function updateScore(
     return next('Word score was not found.');
   }
 
-  const updatedScore = getUpdatedWordScore(grade as GradeType, wordScore.score);
+  const updatedScore = getUpdatedWordScore(
+    grade as GradeType,
+    wordScore.score!,
+  );
   wordScore.score = updatedScore;
   await wordScore.save();
 
@@ -54,7 +57,7 @@ export async function updateEasinessFactor(
     return next('Word score was not found.');
   }
 
-  wordScore.score.easinessFactor = ef;
+  wordScore.score!.easinessFactor = ef;
   await wordScore.save();
 
   res.status(200).json({ message: 'Easiness factor updated.' });
