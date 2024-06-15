@@ -25,8 +25,9 @@ export default class FileSentenceListCreator extends SentenceListCreator {
       ...config,
     };
 
-    this.fromLanguage = config.fromLanguage;
-    this.fromLanguageFile = config.fromLanguageFile;
+    this.fromLanguage = config.fromLanguage ?? defaultConfig.fromLanguage;
+    this.fromLanguageFile =
+      config.fromLanguageFile ?? defaultConfig.fromLanguageFile;
     this.toLanguage = config.toLanguage;
     this.toLanguageFile = config.toLanguageFile;
   }
@@ -86,6 +87,6 @@ export interface FileSentenceListCreatorConfig {
 }
 
 const defaultConfig = {
-  fromLanguage: 'en',
+  fromLanguage: 'en' as LanguageCode,
   fromLanguageFile: 'sentences.txt',
-} as FileSentenceListCreatorConfig;
+};
