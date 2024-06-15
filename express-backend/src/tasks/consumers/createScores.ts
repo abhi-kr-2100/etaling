@@ -5,10 +5,15 @@ import { UserProfile, type UserProfileType } from '../../user-profile';
 import { Types } from 'mongoose';
 
 export async function createScores(
-  message: ConsumeMessage,
+  message: ConsumeMessage | null,
   channel: Channel,
   redisCluster: Client,
 ) {
+  if (message === null) {
+    console.error('Message was null.');
+    return;
+  }
+
   const { user, sentenceListId } = JSON.parse(message.content.toString()) as {
     user: UserProfileType & {
       _id: Types.ObjectId;
@@ -31,7 +36,7 @@ export async function createScores(
       console.error(
         `Given user was not found in the database! ID was ${user._id}.`,
       );
-      process.exit(1);
+      return;
     }
     savedUser.configuredSentenceLists.push(new Types.ObjectId(sentenceListId));
     await savedUser.save();
