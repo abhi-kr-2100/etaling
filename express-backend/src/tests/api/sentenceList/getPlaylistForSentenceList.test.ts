@@ -10,6 +10,7 @@ import WordScore from '../../../word/wordScore';
 
 import { getPlaylistForSentenceList } from '../../../api/sentenceLists';
 import SentenceScore from '../../../sentence/sentenceScore';
+import { HttpStatusCode } from 'axios';
 
 describe('GET playlist for a sentence list', async () => {
   const alice = await UserProfile.create({
@@ -245,5 +246,18 @@ describe('GET playlist for a sentence list', async () => {
 
     expect(data[1].translations.length).toBe(1);
     expect(data[1].translations[0]._id).toBe(translation1_1._id.toString());
+  });
+
+  it('should return forbidden status code if auth is not present in request', async () => {
+    const req = createRequest({
+      url: `/${testSentenceList._id}`,
+      params: {
+        id: testSentenceList._id,
+      },
+    });
+    const res = createResponse();
+
+    await getPlaylistForSentenceList(req, res);
+    expect(res.statusCode).toBe(HttpStatusCode.Forbidden);
   });
 });

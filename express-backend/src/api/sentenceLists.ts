@@ -10,11 +10,12 @@ import Sentence, { type SentenceType } from '../sentence';
 
 import { getLanguageModel } from '../language-models';
 import type { LanguageCode } from '../../../shared/languages';
+import { HttpStatusCode } from 'axios';
 
 const router = Router();
 
 export async function getSentenceLists(req: Request, res: Response) {
-  const userId = req.auth.payload.sub;
+  const userId = req.auth?.payload.sub;
 
   const sentenceLists = await SentenceList.find({
     $or: [{ 'owner.userId': userId }, { isPublic: true }],
@@ -24,8 +25,13 @@ export async function getSentenceLists(req: Request, res: Response) {
 }
 
 export async function getPlaylistForSentenceList(req: Request, res: Response) {
-  const userId = req.auth.payload.sub;
+  const userId = req.auth?.payload.sub;
   const sentenceListId = req.params.id;
+
+  if (userId === undefined) {
+    res.status(HttpStatusCode.Forbidden);
+    return;
+  }
 
   const limit = Number.parseInt(req.query.limit as string);
   const translationLanguages = [req.query.translationLang];
