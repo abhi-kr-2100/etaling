@@ -31,15 +31,15 @@ export default class TatoebaSentenceListCreator extends SentenceListCreator {
     };
 
     this.tatoebaSourceLanguage = LANG_CODE_TO_TATOEBA_ABBR[
-      config.fromLanguage
+      config.fromLanguage ?? defaultConfig.fromLanguage
     ] as TatoebaAbbr;
 
-    this.tatoebaTargetLanguages = config.toLanguages.map(
-      (l) => LANG_CODE_TO_TATOEBA_ABBR[l] as TatoebaAbbr,
-    );
+    this.tatoebaTargetLanguages = (
+      config.toLanguages ?? defaultConfig.toLanguages
+    ).map((l) => LANG_CODE_TO_TATOEBA_ABBR[l] as TatoebaAbbr);
 
-    this.startPage = config.startPage;
-    this.endPage = config.endPage;
+    this.startPage = config.startPage ?? defaultConfig.startPage;
+    this.endPage = config.endPage ?? defaultConfig.endPage;
   }
 
   private getQuery(currPageNum: number) {
@@ -103,8 +103,8 @@ export interface TatoebaSentenceListCreatorConfig {
 }
 
 const defaultConfig = {
-  fromLanguage: 'en',
+  fromLanguage: 'en' as LanguageCode,
   toLanguages: [],
   startPage: 1,
   endPage: 100,
-} as TatoebaSentenceListCreatorConfig;
+};
