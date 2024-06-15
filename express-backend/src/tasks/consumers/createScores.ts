@@ -16,10 +16,10 @@ export async function createScores(
     sentenceListId: string;
   };
 
-  const lockName = `lock:${user._id.toString()}:${sentenceListId}`;
-  const acquired = await redisCluster.setnx(lockName, 'acquired');
+  const flagName = `flag:createUserSpecificScores:${user._id.toString()}:${sentenceListId}`;
+  const wasFlagNotAlreadySet = await redisCluster.setnx(flagName, 'acquired');
 
-  if (acquired === 0) {
+  if (wasFlagNotAlreadySet === 0) {
     // Task is already being processed. This is a duplicate and can be ignored.
     return;
   }
@@ -31,6 +31,6 @@ export async function createScores(
     await savedUser.save();
     channel.ack(message);
   } finally {
-    await redisCluster.del(lockName);
+    await redisCluster.del(flagName);
   }
 }

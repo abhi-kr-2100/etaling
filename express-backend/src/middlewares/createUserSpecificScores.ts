@@ -23,15 +23,15 @@ export default async function createUserSpecificScores(
     return next();
   }
 
-  const lockName = `lock:${user._id.toString()}:${req.params.id}`;
-  const acquired = await redisCluster.setnx(lockName, 'acquired');
-  if (acquired === 0) {
-    console.error(`createUserSpecificScores: couldn't acquire ${lockName}`);
+  const flagName = `flag:createUserSpecificScores:${user._id.toString()}:${req.params.id}`;
+  const wasFlagNotAlreadySet = await redisCluster.setnx(flagName, 'acquired');
+  if (wasFlagNotAlreadySet === 0) {
+    console.error(`createUserSpecificScores:  ${flagName} already set.`);
     return next();
   }
   const limit = Number.parseInt(req.query.limit as string);
   await createSomeScoresForUser(user, req.params.id, limit);
-  await redisCluster.del(lockName);
+  await redisCluster.del(flagName);
 
   createScoresChannel.sendToQueue(
     CREATE_SCORES_QUEUE,

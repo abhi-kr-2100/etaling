@@ -55,7 +55,7 @@ describe('create user specific scores middleware', async () => {
     ),
   ]);
 
-  const lockKey1 = `lock:${testUser._id.toString()}:${testSentenceList1._id.toString()}`;
+  const flagName1 = `flag:createUserSpecificScores:${testUser._id.toString()}:${testSentenceList1._id.toString()}`;
 
   let req: Request, res: Response, next: NextFunction;
 
@@ -85,7 +85,7 @@ describe('create user specific scores middleware', async () => {
   });
 
   afterEach(async () => {
-    await redisCluster.del(lockKey1);
+    await redisCluster.del(flagName1);
 
     await WordScore.deleteMany({});
     await SentenceScore.deleteMany({});
@@ -162,7 +162,7 @@ describe('create user specific scores middleware', async () => {
   });
 
   it('should do nothing if the list is being processed already', async () => {
-    await redisCluster.set(lockKey1, 'acquired');
+    await redisCluster.set(flagName1, 'acquired');
     await createUserSpecificScores(req, res, next);
 
     expect(next).toBeCalled();
