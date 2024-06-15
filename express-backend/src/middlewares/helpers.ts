@@ -3,9 +3,9 @@ import {
   getUniqueWordsFromSentences,
   isANewWordForUser,
 } from '../scripts/ScoreCreator';
-import Sentence, { SentenceType } from '../sentence';
+import Sentence, { type SentenceType } from '../sentence';
 import SentenceScore from '../sentence/sentenceScore';
-import { UserProfileType } from '../user-profile';
+import type { UserProfileType } from '../user-profile';
 import WordScore from '../word/wordScore';
 
 export async function createSomeScoresForUser(

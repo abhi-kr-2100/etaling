@@ -1,10 +1,18 @@
-import { NextFunction, Request, Response, Router } from 'express';
+import {
+  type NextFunction,
+  type Request,
+  type Response,
+  Router,
+} from 'express';
 
 import SentenceScore from '../sentence/sentenceScore';
 import WordScore from '../word/wordScore';
 
-import { SentenceType } from '../sentence';
-import { GradeType, getUpdatedSentenceScore } from '../word/scoringAlgorithm';
+import type { SentenceType } from '../sentence';
+import {
+  type GradeType,
+  getUpdatedSentenceScore,
+} from '../word/scoringAlgorithm';
 import { getLanguageModel } from '../language-models';
 
 export async function updateScore(

@@ -6,7 +6,7 @@ import {
   jest,
   expect,
 } from '@jest/globals';
-import { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { createRequest, createResponse } from 'node-mocks-http';
 import { UserProfile } from '../../user-profile';
 import SentenceList from '../../sentence-list';

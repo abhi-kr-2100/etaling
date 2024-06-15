@@ -9,10 +9,8 @@ import {
 } from '@jest/globals';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongoose, { Document, Types } from 'mongoose';
 import TatoebaSentenceListCreator from '../../../scripts/SentenceListCreator/TatoebaSentenceListCreator';
-import { UserProfile, UserProfileType } from '../../../user-profile';
+import { UserProfile } from '../../../user-profile';
 
 describe('Tatoeba Sentence List Creator', async () => {
   const mock = new MockAdapter(axios);

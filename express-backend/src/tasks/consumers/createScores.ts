@@ -1,7 +1,7 @@
-import { Channel, ConsumeMessage } from 'amqplib';
+import type { Channel, ConsumeMessage } from 'amqplib';
 import Client from 'ioredis';
 import { createSomeScoresForUser } from '../../middlewares/helpers';
-import { UserProfile, UserProfileType } from '../../user-profile';
+import { UserProfile, type UserProfileType } from '../../user-profile';
 import { Types } from 'mongoose';
 
 export async function createScores(

@@ -1,4 +1,4 @@
-import { InferSchemaType, Schema, model } from 'mongoose';
+import { type InferSchemaType, Schema, model } from 'mongoose';
 import { scoreSchema } from '../word/wordScore';
 import { sentenceSchema } from '.';
 import { userProfileSchema } from '../user-profile';

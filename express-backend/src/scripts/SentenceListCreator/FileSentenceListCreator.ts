@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises';
 
 import SentenceListCreator from '.';
-import { UserProfileType } from '../../user-profile';
+import type { UserProfileType } from '../../user-profile';
 
-import { LanguageCode } from '../../../../shared/languages';
+import type { LanguageCode } from '../../../../shared/languages';
 
 export default class FileSentenceListCreator extends SentenceListCreator {
   private fromLanguage: string;

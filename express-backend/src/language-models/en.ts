@@ -1,5 +1,5 @@
-import { CaseSensitiveLM, LanguageModel, WordSeparatedLM } from '.';
-import { LanguageCode } from '../../../shared/languages';
+import type { CaseSensitiveLM, LanguageModel, WordSeparatedLM } from '.';
+import type { LanguageCode } from '../../../shared/languages';
 
 export default class EnglishLM
   implements LanguageModel, WordSeparatedLM, CaseSensitiveLM

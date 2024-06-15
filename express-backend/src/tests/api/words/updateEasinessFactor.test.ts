@@ -6,12 +6,12 @@ import {
   it,
   jest,
 } from '@jest/globals';
-import { HydratedDocument } from 'mongoose';
+import { type HydratedDocument } from 'mongoose';
 import { createRequest, createResponse } from 'node-mocks-http';
 import { UserProfile } from '../../../user-profile';
 import { updateEasinessFactor, updateScore } from '../../../api/words';
 import Word from '../../../word/word';
-import WordScore, { WordScoreType } from '../../../word/wordScore';
+import WordScore, { type WordScoreType } from '../../../word/wordScore';
 
 describe("Update word's easiness factor", async () => {
   const alice = await UserProfile.create({

@@ -1,4 +1,4 @@
-import { ScoreType, WordScoreType } from './wordScore';
+import type { ScoreType, WordScoreType } from './wordScore';
 
 export type GradeType = 0 | 1 | 2 | 3 | 4 | 5;
 

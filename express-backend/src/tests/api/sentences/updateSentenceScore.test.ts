@@ -6,11 +6,11 @@ import {
   it,
   jest,
 } from '@jest/globals';
-import { HydratedDocument } from 'mongoose';
+import type { HydratedDocument } from 'mongoose';
 import { createRequest, createResponse } from 'node-mocks-http';
 import Sentence from '../../../sentence';
 import SentenceScore, {
-  SentenceScoreType,
+  type SentenceScoreType,
 } from '../../../sentence/sentenceScore';
 import { UserProfile } from '../../../user-profile';
 import { updateScore } from '../../../api/sentences';

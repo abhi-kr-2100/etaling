@@ -1,4 +1,4 @@
-import { InferSchemaType, Schema, model } from 'mongoose';
+import { type InferSchemaType, Schema, model } from 'mongoose';
 import { userProfileSchema } from '../user-profile';
 
 export const sentenceListSchema = new Schema({

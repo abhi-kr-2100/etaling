@@ -1,4 +1,4 @@
-import { Schema, InferSchemaType, model } from 'mongoose';
+import { Schema, type InferSchemaType, model } from 'mongoose';
 import { LANGUAGE_CODES } from '../../../shared/languages';
 import { sentenceListSchema } from '../sentence-list';
 

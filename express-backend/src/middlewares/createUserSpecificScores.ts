@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 
 import { CREATE_SCORES_QUEUE, createScoresChannel } from '../tasks/queues';
 

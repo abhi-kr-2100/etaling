@@ -1,7 +1,7 @@
 import SentenceList from '../../sentence-list';
-import Sentence, { SentenceType } from '../../sentence';
-import Word, { WordType } from '../../word/word';
-import { UserProfileType } from '../../user-profile';
+import Sentence, { type SentenceType } from '../../sentence';
+import Word, { type WordType } from '../../word/word';
+import type { UserProfileType } from '../../user-profile';
 
 import { getLanguageModel } from '../../language-models';
 

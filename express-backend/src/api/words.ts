@@ -1,8 +1,13 @@
-import { NextFunction, Request, Response, Router } from 'express';
+import {
+  type NextFunction,
+  type Request,
+  type Response,
+  Router,
+} from 'express';
 
 import WordScore from '../word/wordScore';
 
-import getUpdatedWordScore, { GradeType } from '../word/scoringAlgorithm';
+import getUpdatedWordScore, { type GradeType } from '../word/scoringAlgorithm';
 
 export async function updateScore(
   req: Request,

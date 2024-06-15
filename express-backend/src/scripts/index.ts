@@ -6,7 +6,7 @@ import FileSentenceListCreator from './SentenceListCreator/FileSentenceListCreat
 
 import { UserProfile } from '../user-profile';
 
-import { LanguageCode } from '../../../shared/languages';
+import type { LanguageCode } from '../../../shared/languages';
 import SentenceList from '../sentence-list';
 import Sentence from '../sentence';
 import { Types } from 'mongoose';

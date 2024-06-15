@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals';
 import { getLanguageModel } from '../../language-models';
-import { LanguageCode } from '../../../../shared/languages';
+import { type LanguageCode } from '../../../../shared/languages';
 
 describe('getLanguageModel', () => {
   it('should return the English language model', () => {

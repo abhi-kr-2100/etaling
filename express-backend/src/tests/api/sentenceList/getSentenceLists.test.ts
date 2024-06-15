@@ -1,7 +1,11 @@
 import { afterEach, beforeAll, describe, expect, it } from '@jest/globals';
 import { jest } from '@jest/globals';
 
-import { RequestOptions, createRequest, createResponse } from 'node-mocks-http';
+import {
+  type RequestOptions,
+  createRequest,
+  createResponse,
+} from 'node-mocks-http';
 
 import SentenceList from '../../../sentence-list';
 import createUserProfile from '../../../middlewares/createUserProfile';

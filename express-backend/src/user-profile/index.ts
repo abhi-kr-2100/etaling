@@ -1,4 +1,4 @@
-import { InferSchemaType, Schema, model } from 'mongoose';
+import { type InferSchemaType, Schema, model } from 'mongoose';
 
 export const userProfileSchema = new Schema({
   // this is not the MongoDB ObjectId, but a unique identifier passed

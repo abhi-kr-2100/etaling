@@ -1,8 +1,8 @@
 import { Types } from 'mongoose';
 
-import Sentence, { SentenceType } from '../../sentence';
+import Sentence, { type SentenceType } from '../../sentence';
 import SentenceScore from '../../sentence/sentenceScore';
-import Word, { WordType } from '../../word/word';
+import Word, { type WordType } from '../../word/word';
 import WordScore from '../../word/wordScore';
 import { UserProfile } from '../../user-profile';
 

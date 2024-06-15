@@ -1,15 +1,15 @@
-import { Request, Response, Router } from 'express';
-import { ObjectId, Types } from 'mongoose';
+import { type Request, type Response, Router } from 'express';
+import { type ObjectId, Types } from 'mongoose';
 
 import createUserSpecificScores from '../middlewares/createUserSpecificScores';
 
 import SentenceList from '../sentence-list';
 import SentenceScore from '../sentence/sentenceScore';
 import WordScore from '../word/wordScore';
-import Sentence, { SentenceType } from '../sentence';
+import Sentence, { type SentenceType } from '../sentence';
 
 import { getLanguageModel } from '../language-models';
-import { LanguageCode } from '../../../shared/languages';
+import type { LanguageCode } from '../../../shared/languages';
 
 const router = Router();
 
