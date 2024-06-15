@@ -13,9 +13,12 @@ export async function createSomeScoresForUser(
   sentenceListId: string,
   limit?: number,
 ) {
-  const sentences = await Sentence.find({
+  const sentencesBaseQuery = Sentence.find({
     'sentenceList._id': sentenceListId,
-  }).limit(limit);
+  });
+  const sentencesLimitedQuery =
+    limit !== undefined ? sentencesBaseQuery.limit(limit) : sentencesBaseQuery;
+  const sentences = await sentencesLimitedQuery;
 
   const isSentenceNew = await Promise.all(
     sentences.map((s) => isSentenceNewForUser(s, user._id.toString())),
@@ -36,7 +39,7 @@ export async function createSomeScoresForUser(
 
   const words = await getUniqueWordsFromSentences(sentences);
   const isWordNew = await Promise.all(
-    words.map((w) => isANewWordForUser(w, user._id.toString())),
+    words.map((w) => isANewWordForUser(w!, user._id.toString())),
   );
   const newWords = words.filter((w, idx) => isWordNew[idx]);
 
