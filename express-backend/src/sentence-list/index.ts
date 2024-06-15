@@ -2,9 +2,9 @@ import { InferSchemaType, Schema, model } from 'mongoose';
 import { userProfileSchema } from '../user-profile';
 
 export const sentenceListSchema = new Schema({
-  title: String,
+  title: { type: String, required: true },
   isPublic: { type: Boolean, default: true },
-  owner: userProfileSchema,
+  owner: { type: userProfileSchema, required: true },
 });
 
 export type SentenceListType = InferSchemaType<typeof sentenceListSchema>;

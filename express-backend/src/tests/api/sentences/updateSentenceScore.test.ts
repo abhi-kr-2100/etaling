@@ -112,7 +112,10 @@ describe('Update sentence score', async () => {
   it("should give an error if sentence score doesn't exist", async () => {
     const req = createRequest({
       params: {
-        id: sampleSentenceScore._id.toString().replace('a', 'b'),
+        id: (() => {
+          const id = sampleSentenceScore._id.toString();
+          return (id[0] === 'a' ? 'b' : 'a') + id.slice(1);
+        })(),
       },
       query: {
         grade: 3,

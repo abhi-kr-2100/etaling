@@ -159,7 +159,7 @@ describe('GET sentence list', () => {
     });
     const bList = await SentenceList.create({
       title: "Bob's Public List",
-      owner: bob._id,
+      owner: bob,
     });
 
     const req = createRequest(aliceReqOpts);

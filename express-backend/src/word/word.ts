@@ -3,10 +3,11 @@ import { InferSchemaType, Schema, model } from 'mongoose';
 import { LANGUAGE_CODES } from '../../../shared/languages';
 
 export const wordSchema = new Schema({
-  wordText: String,
+  wordText: { type: String, required: true },
   languageCode: {
     type: String,
     enum: LANGUAGE_CODES,
+    required: true,
   },
 });
 

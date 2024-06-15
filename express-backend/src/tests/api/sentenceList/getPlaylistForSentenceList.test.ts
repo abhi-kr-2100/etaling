@@ -66,6 +66,7 @@ describe('GET playlist for a sentence list', async () => {
     SentenceScore.create({
       sentence: sentence2,
       owner: alice,
+      score: {},
     }),
   ]);
 

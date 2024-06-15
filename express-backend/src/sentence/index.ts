@@ -3,10 +3,11 @@ import { LANGUAGE_CODES } from '../../../shared/languages';
 import { sentenceListSchema } from '../sentence-list';
 
 export const sentenceSchema = new Schema({
-  text: String,
+  text: { type: String, required: true },
   textLanguageCode: {
     type: String,
     enum: LANGUAGE_CODES,
+    required: true,
   },
   translations: [Schema.ObjectId],
   sentenceList: sentenceListSchema,

@@ -4,10 +4,10 @@ import { sentenceSchema } from '.';
 import { userProfileSchema } from '../user-profile';
 
 export const sentenceScoreSchema = new Schema({
-  sentence: sentenceSchema,
-  owner: userProfileSchema,
+  sentence: { type: sentenceSchema, required: true },
+  owner: { type: userProfileSchema, required: true },
 
-  score: scoreSchema,
+  score: { type: scoreSchema, required: true },
   level: Number,
 });
 
