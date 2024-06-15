@@ -81,12 +81,10 @@ describe("Update word's easiness factor", async () => {
   it("should give an error if word score doesn't exist", async () => {
     const req = createRequest({
       params: {
-        id: sampleWordScore._id
-          .toString()
-          .replace('a', 'b')
-          .replace('c', 'd')
-          .replace('e', 'f')
-          .replace('0', '1'),
+        id: (() => {
+          const id = sampleWordScore._id.toString();
+          return (id[0] === 'a' ? 'b' : 'a') + id.slice(1);
+        })(),
       },
       query: {
         ef: 2.5,
@@ -97,6 +95,7 @@ describe("Update word's easiness factor", async () => {
 
     await updateScore(req, res, next);
 
+    expect(next).toBeCalled();
     expect(res.statusCode).toBe(404);
   });
 });
