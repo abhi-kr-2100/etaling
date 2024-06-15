@@ -16,6 +16,9 @@ export default async function createUserSpecificScores(
   }
 
   const user = await UserProfile.findOne({ userId: req.auth.payload.sub });
+  if (user === null) {
+    return next();
+  }
   const configuredSentenceListIds = user.configuredSentenceLists.map((id) =>
     id.toString(),
   );

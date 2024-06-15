@@ -175,4 +175,39 @@ describe('create user specific scores middleware', async () => {
     expect(sentenceScores.length).toBe(0);
     expect(wordScores.length).toBe(0);
   });
+
+  it("should ignore requests if user can't be found from auth", async () => {
+    const req = createRequest({
+      method: 'GET',
+      url: '/api/sentenceLists/abc',
+      auth: {
+        payload: {
+          iss: 'https://dev-zn47gq4ofr7kn50q.us.auth0.com/',
+          sub: 'sadfklajsfkdl',
+          iat: 1709835540,
+          exp: 1709921940,
+          azp: 'Hr3TuSKc8h2rkY0sxGAfXTbAQkEODFa5',
+          scope: 'openid profile email',
+        },
+      },
+      params: {
+        id: testSentenceList1._id.toString(),
+      },
+      query: {
+        limit: '10',
+      },
+    });
+
+    await createUserSpecificScores(req, res, next);
+
+    expect(next).toBeCalled();
+
+    const [sentenceScores, wordScores] = await Promise.all([
+      SentenceScore.find({}),
+      WordScore.find({}),
+    ]);
+
+    expect(sentenceScores.length).toBe(0);
+    expect(wordScores.length).toBe(0);
+  });
 });
