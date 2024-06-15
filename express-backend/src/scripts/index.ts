@@ -24,6 +24,11 @@ switch (process.argv[2]) {
     }
 
     const user = await UserProfile.findById(process.argv[4]);
+    if (user === null) {
+      console.error(`User profile with ID ${process.argv[4]} not found.`);
+      process.exit(1);
+    }
+
     const sentenceListCreator = new TatoebaSentenceListCreator(
       process.argv[3],
       user,
@@ -43,6 +48,11 @@ switch (process.argv[2]) {
     }
 
     const user = await UserProfile.findById(process.argv[4]);
+    if (user === null) {
+      console.error(`User profile with ID ${process.argv[4]} not found.`);
+      process.exit(1);
+    }
+
     const sentenceListCreator = new FileSentenceListCreator(
       process.argv[3],
       user,
@@ -69,6 +79,11 @@ switch (process.argv[2]) {
         'sentenceList._id': new Types.ObjectId(process.argv[3]),
       }),
     ]);
+
+    if (sentenceList === null) {
+      console.error(`SentenceList with ID ${process.argv[3]} not found.`);
+      process.exit(1);
+    }
 
     const wordLengths = process.argv
       .slice(4)
