@@ -95,6 +95,7 @@ describe('GET playlist for a sentence list', async () => {
       WordScore.create({
         word,
         owner: alice,
+        score: {},
       }),
     ),
   );

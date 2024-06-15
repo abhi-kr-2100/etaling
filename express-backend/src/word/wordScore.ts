@@ -8,17 +8,16 @@ export const scoreSchema = new Schema({
   interRepetitionIntervalInDays: {
     type: Number,
     min: 1,
-    required: false,
     default: 1,
   },
-  lastReviewDate: { type: Date, required: false },
+  lastReviewDate: { type: Date },
 });
 
 export const wordScoreSchema = new Schema({
-  word: wordSchema,
-  owner: userProfileSchema,
+  word: { type: wordSchema, required: true },
+  owner: { type: userProfileSchema, required: true },
 
-  score: scoreSchema,
+  score: { type: scoreSchema, required: true },
 });
 
 export type WordScoreType = InferSchemaType<typeof wordScoreSchema>;
