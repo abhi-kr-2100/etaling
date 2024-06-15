@@ -13,6 +13,9 @@ export default async function createScoresForUser(
   sentenceListId: Types.ObjectId,
 ) {
   const user = await UserProfile.findById(userProfileId);
+  if (user === null) {
+    throw new Error(`User profile with ID ${userProfileId} couldn't be found.`);
+  }
   if (user.configuredSentenceLists.includes(sentenceListId)) {
     return;
   }
@@ -34,7 +37,7 @@ export default async function createScoresForUser(
 
   const words = await getUniqueWordsFromSentences(sentences);
   const isWordNew = await Promise.all(
-    words.map((w) => isANewWordForUser(w, user._id.toString())),
+    words.map((w) => isANewWordForUser(w!, user._id.toString())),
   );
   const newWords = words.filter((w, idx) => isWordNew[idx]);
 
