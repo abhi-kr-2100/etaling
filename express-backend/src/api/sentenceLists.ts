@@ -102,7 +102,7 @@ async function getSentencesSortedBySentenceScoreLevel(
       },
     },
     {
-      $sort: { level: 1, 'score.easinessFactor': 1 },
+      $sort: { 'score.easinessFactor': 1, level: 1 },
     },
     ...(isNaN(limit) ? [] : [{ $limit: limit }]),
     {
