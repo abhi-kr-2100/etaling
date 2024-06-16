@@ -21,7 +21,7 @@ export default function Question({
 }: QuestionProps) {
   const theme = useTheme();
   const lm = useMemo(
-    () => getLanguageModel(question.sentence.textLanguageCode!),
+    () => getLanguageModel(question.sentence.textLanguageCode),
     [question.sentence.textLanguageCode],
   );
 
@@ -95,7 +95,7 @@ export default function Question({
       <FillInTheBlanks
         componentsBeforeBlank={wordComponentsBefore}
         componentsAfterBlank={wordComponentsAfter}
-        hint={question.translations[0].text!}
+        hint={question.translations[0].text}
         solved={isSolutionChecked}
         solution={wordComponentsUnderMask}
         BlankInputProps={{
@@ -185,19 +185,30 @@ function chooseMaskedWordWeighted(
     );
     const level = Math.max(
       1,
-      wordScore.score.interRepetitionIntervalInDays! - daysSinceLastReview,
+      wordScore.score.interRepetitionIntervalInDays - daysSinceLastReview,
     );
     return 1.0 / (level * wordScore.score.easinessFactor);
   });
 
-  const wordToMask = chance.weighted(wordScores, weights);
-  const occurrences = lm.findWord(text, wordToMask.word!.wordText!);
+  const amplifiedWeights = amplifyMax(weights);
+  const wordToMask = chance.weighted(wordScores, amplifiedWeights);
+  const occurrences = lm.findWord(text, wordToMask.word.wordText);
   const occurrenceToMask = sample(occurrences)!;
 
   return {
     wordToMask,
     intervalToMask: occurrenceToMask,
   };
+}
+
+function amplifyMax(numbers: number[], factor = 2.0) {
+  const max = Math.max(...numbers);
+  const maxIdx = numbers.findIndex((x) => x === max);
+  return [
+    ...numbers.slice(0, maxIdx),
+    numbers[maxIdx] * factor,
+    ...numbers.slice(maxIdx + 1),
+  ];
 }
 
 function getWordComponentsFromWordScores(
@@ -210,7 +221,7 @@ function getWordComponentsFromWordScores(
   const components = [];
   let previousInterval: [number, number] | undefined;
   for (const wordScore of wordScores) {
-    const wordText = wordScore.word!.wordText!;
+    const wordText = wordScore.word.wordText;
 
     if (!wordToIntervalIdx.has(wordText)) {
       wordToIntervalIdx.set(wordText, 0);
@@ -259,7 +270,7 @@ function useFillInTheBlanksQuestion(question: SentenceData, lm: LanguageModel) {
     setInitialQuestion(question);
   }, [initialQuestion.sentence.sentenceScoreId, question]);
 
-  const questionText = initialQuestion.sentence.text!;
+  const questionText = initialQuestion.sentence.text;
 
   const { wordToMask, intervalToMask } = useMemo(
     () => chooseMaskedWordWeighted(questionText, initialQuestion.words, lm),
@@ -286,7 +297,7 @@ function getWordComponentsFromText(
   const wordTexts = lm.getWords(text);
   const matchedWordScores = wordTexts.map(
     (wordText) =>
-      wordScores.find((wordScore) => wordScore.word!.wordText === wordText)!,
+      wordScores.find((wordScore) => wordScore.word.wordText === wordText)!,
   );
 
   if (matchedWordScores.some((ws) => ws === undefined)) {
