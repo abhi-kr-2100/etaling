@@ -130,7 +130,18 @@ switch (process.argv[2]) {
     break;
   }
   case 'normalizeSentenceScores': {
-    const sentenceScores = await SentenceScore.find({});
+    if (process.argv.length !== 5) {
+      console.error(`Missing parameters: userId sentenceListId`);
+      process.exit(1);
+    }
+
+    const userId = new Types.ObjectId(process.argv[3]);
+    const sentenceListId = new Types.ObjectId(process.argv[4]);
+
+    const sentenceScores = await SentenceScore.find({
+      'sentence.sentenceList._id': sentenceListId,
+      'owner._id': userId,
+    });
     await Promise.all(
       sentenceScores.map(async (sentenceScore) => {
         const lm = getLanguageModel(sentenceScore.sentence.textLanguageCode);
@@ -138,6 +149,7 @@ switch (process.argv[2]) {
         const wordScores = await WordScore.find({
           'word.languageCode': sentenceScore.sentence.textLanguageCode,
           'word.wordText': { $in: words },
+          'owner._id': userId,
         });
         const lowestScoredWord = wordScores.reduce((prev, curr) => {
           return prev.score.easinessFactor < curr.score.easinessFactor
