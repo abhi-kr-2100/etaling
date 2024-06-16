@@ -12,6 +12,7 @@ import Sentence from '../sentence';
 import { Types } from 'mongoose';
 import { getLanguageModel } from '../language-models';
 import SentenceScore from '../sentence/sentenceScore';
+import WordScore from '../word/wordScore';
 
 if (process.argv.length < 3) {
   process.exit();
@@ -124,6 +125,29 @@ switch (process.argv[2]) {
           ]);
         })
         .filter((x) => x !== undefined),
+    );
+
+    break;
+  }
+  case 'normalizeSentenceScores': {
+    const sentenceScores = await SentenceScore.find({});
+    await Promise.all(
+      sentenceScores.map(async (sentenceScore) => {
+        const lm = getLanguageModel(sentenceScore.sentence.textLanguageCode);
+        const words = lm.getWords(sentenceScore.sentence.text);
+        const wordScores = await WordScore.find({
+          'word.languageCode': sentenceScore.sentence.textLanguageCode,
+          'word.wordText': { $in: words },
+        });
+        const lowestScoredWord = wordScores.reduce((prev, curr) => {
+          return prev.score.easinessFactor < curr.score.easinessFactor
+            ? prev
+            : curr;
+        });
+
+        sentenceScore.score = lowestScoredWord.score;
+        await sentenceScore.save();
+      }),
     );
 
     break;
